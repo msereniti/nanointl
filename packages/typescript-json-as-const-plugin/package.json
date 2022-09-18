@@ -1,0 +1,19 @@
+{
+  "name": "typescript-json-as-const-plugin",
+  "source": "src/typescript-json-as-const-plugin.ts",
+  "main": "dist/typescript-json-as-const-plugin.js",
+  "umd:main": "dist/typescript-json-as-const-plugin.umd.js",
+  "module": "dist/typescript-json-as-const-plugin.mjs",
+  "exports": {
+    "types": "./dist/typescript-json-as-const-plugin.d.ts",
+    "require": "./dist/typescript-json-as-const-plugin.js",
+    "default": "./dist/typescript-json-as-const-plugin.mjs"
+  },
+  "types": "dist/typescript-json-as-const-plugin.d.ts",
+  "scripts": {
+    "build": "microbundle"
+  },
+  "devDependencies": {
+    "microbundle": "^0.15.1"
+  }
+}

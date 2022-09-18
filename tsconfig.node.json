@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "strict": true,
+    "skipLibCheck": false,
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "incremental": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "baseUrl": "./"
+  },
+  "include": ["vitest.config.ts"]
+}

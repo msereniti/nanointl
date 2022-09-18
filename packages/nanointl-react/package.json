@@ -1,0 +1,12 @@
+{
+  "name": "@nanointl/react",
+  "author": "Michael Sereniti",
+  "devDependencies": {
+    "@types/react": "18.0.20",
+    "microbundle": "^0.15.1",
+    "react": "16.8.6"
+  },
+  "peerDependencies": {
+    "react": "^16.8"
+  }
+}

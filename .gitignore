@@ -1,0 +1,32 @@
+node_modules
+*.local
+build
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# prisma unexpected codegen
+apps/*/package.json
+apps/*/package-lock.json
+
+apps/forntnend/src/locales/*.json.d.ts
+
+utils/.formatjs-repo-clone
