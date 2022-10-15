@@ -21,7 +21,12 @@ export const App: React.FC = () => {
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>{t('counter', { count })}</button>
         <p>
-          {t('description', { filePath: 'src/App.tsx' })}
+          {t('description', {
+            filePath: 'src/App.tsx',
+            code: ({ children }) => {
+              return <code>{children}</code>;
+            },
+          })}
         </p>
       </div>
       <p className="read-the-docs">{t('readTheDocs')}</p>

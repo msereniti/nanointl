@@ -1,11 +1,13 @@
 import { describe, expect, test } from 'vitest';
 import { makeIntl } from './makeIntl';
+import { tagsPlugin } from './tags';
+import { markdownPlugin } from './markdown';
 import { ICUVariablesMapFromTemplate } from './typings';
 
 const formatEnMessage = <Message extends string>(message: Message, values: ICUVariablesMapFromTemplate<Message> | null): string =>
   makeIntl('en', { message }).formatMessage('message', values as any);
 
-describe('makeIntl', () => {
+describe('pure intl', () => {
   test('Message without interpolations', () => {
     expect(formatEnMessage('Hello world', null)).toBe('Hello world');
   });
@@ -65,5 +67,56 @@ describe('makeIntl', () => {
         num: 2,
       }),
     ).toBe('one');
+  });
+});
+
+describe('plugins integrations', () => {
+  test('tags plugin', () => {
+    const message = 'Hello, <strong>{username}</strong>!' as const;
+    const intl = makeIntl('en', { message }, { plugins: [tagsPlugin] });
+
+    expect(
+      intl.formatMessage('message', {
+        username: 'Sereniti',
+        strong: ({ children }) => ({ is: 'some-object-entity', children }),
+      }),
+    ).toEqual(['Hello, ', { is: 'some-object-entity', children: `Sereniti` }, '!']);
+  });
+  test('markdown plugin', () => {
+    const message = 'Hello, **{username}**!' as const;
+    const intl = makeIntl('en', { message }, { plugins: [markdownPlugin] });
+
+    expect(
+      intl.formatMessage('message', {
+        username: 'Sereniti',
+        strong: ({ children }) => ({ is: 'some-object-entity', children }),
+      }),
+    ).toEqual(['Hello, ', { is: 'some-object-entity', children: `Sereniti` }, '!']);
+  });
+
+  test('tags + markdown plugins', () => {
+    const message = 'Hello, <code>**{username}**</code>!' as const;
+    const intl = makeIntl('en', { message }, { plugins: [tagsPlugin, markdownPlugin] });
+
+    expect(
+      intl.formatMessage('message', {
+        username: 'Sereniti',
+        code: ({ children }) => ({ is: 'tags-produced-node', children }),
+        strong: ({ children }) => ({ is: 'md-produced-node', children }),
+      }),
+    ).toEqual(['Hello, ', { is: 'tags-produced-node', children: [{ is: 'md-produced-node', children: `Sereniti` }] }, '!']);
+  });
+
+  test('markdown + tags plugins', () => {
+    const message = 'Hello, **<code>{username}</code>**!' as const;
+    const intl = makeIntl('en', { message }, { plugins: [tagsPlugin, markdownPlugin] });
+
+    expect(
+      intl.formatMessage('message', {
+        username: 'Sereniti',
+        code: ({ children }) => ({ is: 'tags-produced-node', children }),
+        strong: ({ children }) => ({ is: 'md-produced-node', children }),
+      }),
+    ).toEqual(['Hello, ', { is: 'md-produced-node', children: [{ is: 'tags-produced-node', children: `Sereniti` }] }, '!']);
   });
 });

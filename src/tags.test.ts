@@ -1,29 +1,42 @@
 import { describe, expect, test } from 'vitest';
 import { AstNode } from './parse';
-import { makeTagsParsingExternalStore, postParse, preSerialize, tagsChunkParser } from './tags';
+import { makeTagsParsingExternalStore, tagsChunkParser, tagsPostParser } from './tags';
 
 describe('tags', () => {
   test('simplest cases', () => {
     expect(tagsChunkParser('Hello <b>bold text</b> world')).toEqual([
       'Hello ',
-      { type: 'tag', tag: 'b', children: ['bold text'] },
+      { type: 'external', name: 'tag', variableName: 'b', data: { children: ['bold text'] } },
       ' world',
     ]);
   });
   test('multiple tags', () => {
     expect(tagsChunkParser('<b>bold</b> text between <i>italic</i>')).toEqual([
-      { type: 'tag', tag: 'b', children: ['bold'] },
+      { type: 'external', name: 'tag', variableName: 'b', data: { children: ['bold'] } },
       ' text between ',
-      { type: 'tag', tag: 'i', children: ['italic'] },
+      { type: 'external', name: 'tag', variableName: 'i', data: { children: ['italic'] } },
     ]);
   });
   test('lone tag', () => {
-    expect(tagsChunkParser('<strong />')).toEqual([{ type: 'tag', tag: 'strong', children: [] }]);
+    expect(tagsChunkParser('<strong />')).toEqual([
+      { type: 'external', name: 'tag', variableName: 'strong', data: { children: [] } },
+    ]);
   });
   test('nested tags', () => {
     expect(tagsChunkParser('Hello <b>before<i>bold and italic text</i>after</b> world')).toEqual([
       'Hello ',
-      { type: 'tag', tag: 'b', children: ['before', { type: 'tag', tag: 'i', children: ['bold and italic text'] }, 'after'] },
+      {
+        type: 'external',
+        name: 'tag',
+        variableName: 'b',
+        data: {
+          children: [
+            'before',
+            { type: 'external', name: 'tag', variableName: 'i', data: { children: ['bold and italic text'] } },
+            'after',
+          ],
+        },
+      },
       ' world',
     ]);
   });
@@ -34,7 +47,11 @@ describe('tags', () => {
     const externalStore = makeTagsParsingExternalStore();
     tagsChunkParser('Hello <b>bold ', externalStore);
     tagsChunkParser('text</b> world', externalStore);
-    expect(externalStore.ast).toEqual(['Hello ', { type: 'tag', tag: 'b', children: ['bold text'] }, ' world']);
+    expect(externalStore.ast).toEqual([
+      'Hello ',
+      { type: 'external', name: 'tag', variableName: 'b', data: { children: ['bold text'] } },
+      ' world',
+    ]);
   });
   test('external store with nested tags', () => {
     const externalStore = makeTagsParsingExternalStore();
@@ -47,16 +64,31 @@ describe('tags', () => {
     tagsChunkParser(' world', externalStore);
     expect(externalStore.ast).toEqual([
       'Hello ',
-      { type: 'tag', tag: 'b', children: ['before', { type: 'tag', tag: 'i', children: ['bold and italic text'] }, 'after'] },
+      {
+        type: 'external',
+        name: 'tag',
+        variableName: 'b',
+        data: {
+          children: [
+            'before',
+            { type: 'external', name: 'tag', variableName: 'i', data: { children: ['bold and italic text'] } },
+            'after',
+          ],
+        },
+      },
       ' world',
     ]);
   });
-  test('external store with children injection', () => {
+  test('external store with data injection', () => {
     const externalStore = makeTagsParsingExternalStore();
     tagsChunkParser('Hello <b>', externalStore);
     externalStore.ast.push({ injectedChild: true } as any);
     tagsChunkParser('</b> world', externalStore);
-    expect(externalStore.ast).toEqual(['Hello ', { type: 'tag', tag: 'b', children: [{ injectedChild: true }] }, ' world']);
+    expect(externalStore.ast).toEqual([
+      'Hello ',
+      { type: 'external', name: 'tag', variableName: 'b', data: { children: [{ injectedChild: true }] } },
+      ' world',
+    ]);
   });
 });
 
@@ -65,25 +97,44 @@ describe('icu rich formatting', () => {
     test('simple case', () => {
       const parsedIcuAst: AstNode[] = ['Hello, <b>', { type: 'variable', name: 'username', bracketsGroup: 0 }, '</b>!'];
 
-      const resultAst = postParse(parsedIcuAst);
+      const resultAst = tagsPostParser(parsedIcuAst);
 
       expect(resultAst).toEqual([
         'Hello, ',
-        { type: 'tag', tag: 'b', children: [{ type: 'variable', name: 'username', bracketsGroup: 0 }] },
+        {
+          type: 'external',
+          name: 'tag',
+          variableName: 'b',
+          data: {
+            children: [{ type: 'variable', name: 'username', bracketsGroup: 0 }],
+          },
+        },
         '!',
       ]);
     });
     test('nested tags', () => {
       const parsedIcuAst: AstNode[] = ['Hello, <b><i>', { type: 'variable', name: 'username', bracketsGroup: 0 }, '</i></b>!'];
 
-      const resultAst = postParse(parsedIcuAst);
+      const resultAst = tagsPostParser(parsedIcuAst);
 
       expect(resultAst).toEqual([
         'Hello, ',
         {
-          type: 'tag',
-          tag: 'b',
-          children: [{ type: 'tag', tag: 'i', children: [{ type: 'variable', name: 'username', bracketsGroup: 0 }] }],
+          type: 'external',
+          name: 'tag',
+          variableName: 'b',
+          data: {
+            children: [
+              {
+                type: 'external',
+                name: 'tag',
+                variableName: 'i',
+                data: {
+                  children: [{ type: 'variable', name: 'username', bracketsGroup: 0 }],
+                },
+              },
+            ],
+          },
         },
         '!',
       ]);
@@ -98,16 +149,16 @@ describe('icu rich formatting', () => {
         ' will pay for the night development!',
       ];
 
-      const resultAst = postParse(parsedIcuAst);
+      const resultAst = tagsPostParser(parsedIcuAst);
 
       expect(resultAst).toEqual([
         {
           type: 'select',
           variable: { type: 'variable', name: 'gender', bracketsGroup: 0 },
           options: {
-            male: [{ type: 'tag', tag: 'b', children: ['He'] }],
-            female: [{ type: 'tag', tag: 'b', children: ['She'] }],
-            other: [{ type: 'tag', tag: 'b', children: ['They'] }],
+            male: [{ type: 'external', name: 'tag', variableName: 'b', data: { children: ['He'] } }],
+            female: [{ type: 'external', name: 'tag', variableName: 'b', data: { children: ['She'] } }],
+            other: [{ type: 'external', name: 'tag', variableName: 'b', data: { children: ['They'] } }],
           },
         },
         ' will pay for the night development!',
@@ -124,38 +175,61 @@ describe('icu rich formatting', () => {
         '</i>',
       ];
 
-      const resultAst = postParse(parsedIcuAst);
+      const resultAst = tagsPostParser(parsedIcuAst);
 
       expect(resultAst).toEqual([
         {
-          type: 'tag',
-          tag: 'i',
-          children: [
-            {
-              type: 'select',
-              variable: { type: 'variable', name: 'gender', bracketsGroup: 0 },
-              options: {
-                male: [{ type: 'tag', tag: 'b', children: ['He'] }],
-                female: [{ type: 'tag', tag: 'b', children: ['She'] }],
-                other: [{ type: 'tag', tag: 'b', children: ['They'] }],
+          type: 'external',
+          name: 'tag',
+          variableName: 'i',
+          data: {
+            children: [
+              {
+                type: 'select',
+                variable: { type: 'variable', name: 'gender', bracketsGroup: 0 },
+                options: {
+                  male: [{ type: 'external', name: 'tag', variableName: 'b', data: { children: ['He'] } }],
+                  female: [{ type: 'external', name: 'tag', variableName: 'b', data: { children: ['She'] } }],
+                  other: [{ type: 'external', name: 'tag', variableName: 'b', data: { children: ['They'] } }],
+                },
               },
-            },
-          ],
+            ],
+          },
         },
       ]);
     });
   });
-  describe('serialization', () => {
-    test('simple case', () => {
-      const ast = [
-        'Hello, ',
-        { type: 'tag', tag: 'b', children: [{ type: 'variable', name: 'username', bracketsGroup: 0 }] },
-        '!',
-      ];
+});
 
-      const serializedAst = preSerialize(ast, { b: () => `xxx` });
-
-      expect(serializedAst).toEqual(['Hello, ', 'xxx', '!']);
-    });
+describe('tags postParser', () => {
+  test('basic parsing of one level interpolation', () => {
+    expect(
+      tagsPostParser([
+        'Edit <code>',
+        {
+          type: 'variable',
+          name: 'filePath',
+          bracketsGroup: 0,
+        },
+        '</code> and save to test HMR',
+      ]),
+    ).toEqual([
+      'Edit ',
+      {
+        type: 'external',
+        name: 'tag',
+        variableName: 'code',
+        data: {
+          children: [
+            {
+              type: 'variable',
+              name: 'filePath',
+              bracketsGroup: 0,
+            },
+          ],
+        },
+      },
+      ' and save to test HMR',
+    ]);
   });
 });

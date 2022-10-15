@@ -53,14 +53,16 @@ export type ExternalParsers<Params = unknown> = {
 const pluralOptions = ['zero', 'one', 'two', 'few', 'many', 'other'];
 const externals = ['number', 'date', 'time'];
 
-export const parseIcu = (
-  message: string,
-  options: {
-    externalParsers?: ExternalParsers;
-    verboseParsing?: { [variableName: string]: any };
-  },
-): AstNode[] => {
-  if (!message.includes('{')) return [message];
+export type ParseIcuOptions = {
+  externalParsers?: ExternalParsers;
+  verboseParsing?: { [variableName: string]: any };
+  postParsers?: PostParser<AstNode[], AstNode[]>[];
+};
+const runPostParsers = (ast: AstNode[], postParsers: ParseIcuOptions['postParsers'] = []) =>
+  postParsers.reduce((ast, postParser) => postParser(ast), ast);
+
+export const parseIcu = (message: string, options: ParseIcuOptions): AstNode[] => {
+  if (!message.includes('{')) return runPostParsers([message], options.postParsers);
 
   const topLevel: AstNode[] = [];
   const parentAstChain: AstNode[][] = [];
@@ -125,7 +127,7 @@ export const parseIcu = (
         ast = prevAstPart.options[currentPart.name as keyof typeof prevAstPart.options] as AstNode[];
       }
     }
-    if (!partConsumed) {
+    if (!partConsumed && currentPart !== null) {
       ast.push(currentPart);
       prevAstPart = currentPart;
     }
@@ -252,7 +254,7 @@ export const parseIcu = (
   }
   if (currentAstPart !== null) ast.push(currentAstPart);
 
-  return ast;
+  return runPostParsers(ast, options.postParsers);
 };
 
 export type PostParser<InputAst extends AstNode[], OutputAst extends AstNode[]> = (inputAst: InputAst) => OutputAst;

@@ -1,9 +1,11 @@
+import { NanointlPlugin } from './makeIntl';
 import { AstNode } from './parse';
 
 type TagNode = {
-  type: 'tag';
-  tag: string;
-  children: TagsAstNode[];
+  type: 'external';
+  name: 'tag';
+  variableName: string;
+  data: { children: TagsAstNode[] };
 };
 export type TagsAstNode = string | TagNode;
 export type TagsParsingStore = {
@@ -55,14 +57,15 @@ export const tagsChunkParser = (message: string, externalStore?: TagsParsingStor
       closingTag = false;
       pushCurrentPartToAst();
       currentAstPart = {
-        type: 'tag',
-        tag: '',
-        children: [],
+        type: 'external',
+        name: 'tag',
+        variableName: '',
+        data: { children: [] },
       };
     } else {
       if (currentAstPart === null) currentAstPart = '';
       if (typeof currentAstPart === 'string') currentAstPart += char;
-      if (typeof currentAstPart === 'object' && currentAstPart.type === 'tag') {
+      if (typeof currentAstPart === 'object' && currentAstPart.name === 'tag') {
         if (char === ' ' || char === '\n' || char === '\r' || char === '\t') {
           tagAttrsSkip = true;
           continue;
@@ -74,14 +77,16 @@ export const tagsChunkParser = (message: string, externalStore?: TagsParsingStor
           if (!closingTag) {
             store.tagsChain.push(currentAstPart);
             store.parentAstChain.push(store.ast);
-            store.ast = currentAstPart.children;
+            store.ast = currentAstPart.data.children;
           } else {
             const prevChar = message[i - 1];
             const singleTag = prevChar === '/';
             if (!singleTag) {
               const parentTag = store.tagsChain.pop();
-              if (parentTag?.tag !== currentAstPart?.tag) {
-                throw new Error(`Wrong order of tags: got "${currentAstPart.tag}" on closing of "${parentTag?.tag}"`);
+              if (parentTag?.variableName !== currentAstPart?.variableName) {
+                throw new Error(
+                  `Wrong order of tags: got "${currentAstPart.variableName}" on closing of "${parentTag?.variableName}"`,
+                );
               }
               store.ast.pop();
               if (store.parentAstChain.length > 0) store.ast = store.parentAstChain.pop()!;
@@ -89,53 +94,61 @@ export const tagsChunkParser = (message: string, externalStore?: TagsParsingStor
           }
           currentAstPart = null;
         } else {
-          currentAstPart.tag += char;
+          currentAstPart.variableName += char;
         }
       }
     }
   }
 
   pushCurrentPartToAst();
-  if (!externalStore) return store.parentAstChain.pop() ?? store.ast;
+  if (!externalStore) return store.parentAstChain[0] ?? store.ast;
 };
 
 // type ModifiedAstNode = {};
 
-export const postParse = (icuAst: AstNode[]) => {
+export const tagsPostParser = (icuAst: AstNode[]) => {
   const store = makeTagsParsingExternalStore();
 
   for (const node of icuAst) {
     if (typeof node === 'string') tagsChunkParser(node, store);
-    else {
-      if ('options' in node) {
-        const options = {};
-        for (const option in node.options) {
-          options[option] = postParse(node.options[option]);
-        }
-        store.ast.push({ ...node, options });
-      } else {
-        store.ast.push(node);
+    else if (node.type === 'select') {
+      const options = {};
+      for (const option in node.options) {
+        options[option] = tagsPostParser(node.options[option]);
       }
+      store.ast.push({ ...node, options });
+    } else if (node.type === 'plural') {
+      const options = { exacts: {} };
+      for (const option in node.options) {
+        if (option === 'exacts') {
+          for (const exact in node.options.exacts) {
+            options.exacts[exact] = tagsPostParser(node.options.exacts[exact]);
+          }
+        } else {
+          options[option] = tagsPostParser(node.options[option]);
+        }
+      }
+      store.ast.push({ ...node, options });
+    } else {
+      store.ast.push(node);
     }
   }
 
   return store.ast;
 };
 
-export const preSerialize = (ast, renderers) =>
-  ast.map((node) => {
-    if (typeof node === 'string') return node;
-    if ('options' in node) {
-      const options = {};
-      for (const option in node.options) {
-        options[option] = preSerialize(node.options[option], renderers);
-      }
-      return { ...node, options };
-    }
-    if (node.type !== 'tag') return node;
-    node.children = preSerialize(node.children, renderers);
-    if (typeof renderers[node.tag] !== 'function') {
-      throw new Error(`Render function for tag "${node.tag}" was not provided`);
-    }
-    return renderers[node.tag](node.children);
-  });
+export const tagsPostSerializer = ({ children }, value, _intl, serializeNested, node, values) => {
+  if (!value) {
+    if (values.tagsFallback) value = values.tagsFallback;
+    else throw new Error(`Serializer for "${node.variableName}" was not provided`);
+  }
+  return value({ children: serializeNested(children), tag: node.variableName });
+};
+
+export const tagsPlugin: NanointlPlugin<any> = {
+  name: 'tags-plugin',
+  init(options) {
+    options.addSerializer('tag', tagsPostSerializer);
+    options.addPostParser(tagsPostParser);
+  },
+};

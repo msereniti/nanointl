@@ -1,7 +1,12 @@
 import { IntlBase } from './intlBase';
 import { AstNode } from './parse';
 
-export type ExternalSerializer<Params = unknown> = (params: Params | null, variableValue: unknown, intl: IntlBase) => string;
+export type ExternalSerializer<Params = unknown> = (
+  params: Params | null,
+  variableValue: unknown,
+  intl: IntlBase,
+  serializeNested: (ast: AstNode[]) => unknown,
+) => string;
 export type ExternalSerializers<Params = unknown> = {
   [serializerName: string]: ExternalSerializer<Params>;
 };
@@ -14,21 +19,38 @@ type Reducer<T> = {
   getInit: () => T;
   reduce: (acc: T, item: unknown, nodeType: 'string' | 'variable' | 'plural' | 'select' | 'external' | 'unknown') => T;
 };
-const defaultReducer: Reducer<string> = {
+const defaultReducer: Reducer<string | (string | unknown)[]> = {
   getInit: () => '',
-  reduce: (acc, item) => acc + String(item),
+  reduce: (acc, item) => {
+    if (typeof item !== 'object') {
+      if (Array.isArray(acc)) {
+        if (typeof acc[acc.length - 1] !== 'object') acc[acc.length - 1] += String(item);
+        else acc.push(String(item));
+      } else {
+        acc += String(item);
+      }
+    } else {
+      if (Array.isArray(acc)) acc.push(item);
+      else if (acc === '') return [item];
+      else return [acc, item];
+    }
+    return acc;
+  },
+};
+
+export type SerializeIcuOptions = {
+  externalSerializers?: ExternalSerializers;
+  reducer?: Reducer<T>;
+  original?: string;
 };
 
 export const serializeIcu = <T = string>(
   ast: AstNode[],
   values: Record<string, string | number | boolean | undefined | unknown>,
   intl: IntlBase,
-  options?: {
-    externalSerializers?: ExternalSerializers;
-    reducer?: Reducer<T>;
-    original?: string;
-  },
+  options?: SerializeIcuOptions,
 ): T => {
+  const serializeNested = (ast: AstNode[]) => serializeIcu(ast, values, intl, options);
   const reducer = options?.reducer ?? (defaultReducer as any as Reducer<T>);
   let result = reducer.getInit();
   for (const node of ast) {
@@ -74,8 +96,21 @@ export const serializeIcu = <T = string>(
           }
           throw new Error(`No serializer provided for type ${node.name}`);
         }
-        const serialized = options.externalSerializers?.[node.name](node.data, values[node.variableName], intl);
-        result = reducer.reduce(result, serialized, 'external');
+        const subResult = options.externalSerializers?.[node.name](
+          node.data,
+          values[node.variableName],
+          intl,
+          serializeNested,
+          node,
+          values,
+        );
+        if (Array.isArray(subResult)) {
+          for (const chunk of subResult) {
+            result = reducer.reduce(result, chunk, 'external');
+          }
+        } else {
+          result = reducer.reduce(result, subResult, 'external');
+        }
       } else {
         result = reducer.reduce(result, node, 'unknown');
       }

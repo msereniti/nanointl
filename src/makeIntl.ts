@@ -1,6 +1,7 @@
 import { makeIntlBase } from './intlBase';
-import { AstNode, ExternalParser, ExternalParsers, parseIcu, PostParser } from './parse';
+import { AstNode, ExternalParser, ExternalParsers, parseIcu, ParseIcuOptions, PostParser } from './parse';
 import { ExternalSerializer, ExternalSerializers, serializeIcu, PreSerializer } from './serialize';
+import { preSerialize } from './tags';
 import { ICUVariablesMapFromTemplate } from './typings';
 
 type RequiredButUndefinedPossible<T extends {}> = {
@@ -28,7 +29,7 @@ export type NanointlPlugin<
   init: (options: {
     addParser: (token: string, parser: ExternalParser<Params>) => void;
     addSerializer: (token: string, serializer: ExternalSerializer<Params>) => void;
-    addInnerProcessor: (postParser: PostParser<AstNode[], AstNode[]>, preSerializer: PreSerializer<AstNode[], AstNode[]>) => void;
+    addPostParser: (postParser: PostParser<AstNode[], AstNode[]>) => void;
   }) => void;
 };
 
@@ -55,12 +56,16 @@ export const makeIntl = <
   const astStore: { [messageId: string]: AstNode[] } = {};
   const externalParsers: ExternalParsers = {};
   const externalSerializers: ExternalSerializers = {};
+  const postParsers: PostParser<AstNode[], AstNode[]>[] = [];
 
   for (const plugin of options?.plugins ?? []) {
     try {
       plugin.init({
         addParser: (token, parser) => (externalParsers[token] = parser),
         addSerializer: (token, serializer) => (externalSerializers[token] = serializer),
+        addPostParser: (postParser) => {
+          postParsers.push(postParser);
+        },
       });
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -69,11 +74,13 @@ export const makeIntl = <
     }
   }
 
-  const parsingOptions = {
+  const parsingOptions: ParseIcuOptions = {
     externalParsers,
     verboseParsing: options?.verboseParsing,
+    postParsers,
   };
   for (const messageId in messages) {
+    // astStore[messageId] = postParsers.reduce((ast, postParser) => postParser(ast), parseIcu(messages[messageId], parsingOptions));
     astStore[messageId] = parseIcu(messages[messageId], parsingOptions);
   }
 
@@ -84,10 +91,20 @@ export const makeIntl = <
         return String(messageId);
       }
       const ast = astStore[messageId as keyof typeof astStore];
+
       return serializeIcu(ast, values ?? {}, intlBase, {
         externalSerializers,
         original: messages[messageId],
       });
+      // const processedAst = preSerializers.reduce((ast, preSerialize) => preSerialize(ast), ast);
+
+      // return processedAst.map((node) => {
+      //   console.log({ node });
+      //   return serializeIcu(node, values ?? {}, intlBase, {
+      //     externalSerializers,
+      //     original: messages[messageId],
+      //   });
+      // });
     }) as FM,
   };
 };

@@ -2,8 +2,8 @@
   "viteLogo": "Vite logo",
   "reactLogo": "React logo",
   "title": "Vite + React",
-  "counter": "Button {count, select, 0{wasn''t} other{was}} clicked {count, plural, =0 {} one{once} other {# times}}",
-  "description": "Edit <code>{filePath}</code> and save to test HMR",
+  "counter": "Button {count, select, 0{wasn''t} other{was}} clicked{count, plural, =0 {} one{ once} other { # times}}",
+  "description": "Edit `{filePath}` and save to test HMR",
   "changeLocale": "Pick locale",
   "readTheDocs": "Click on the Vite and React logos to learn more",
   "locale": "Change locale"

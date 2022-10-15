@@ -2,17 +2,17 @@ import { describe, test, expect, it } from 'vitest';
 import esbuild from 'esbuild';
 import fs from 'fs/promises';
 import { sep as pathSep } from 'path';
-import { parseIcu } from './parse';
+import { parseIcu, ParseIcuOptions } from './parse';
 import { serializeIcu } from './serialize';
 import { makeIntlBase } from './intlBase';
-import { makeTagsParsingExternalStore, tagsChunkParser, TagsAstNode } from './tags';
+import { makeTagsParsingExternalStore, tagsChunkParser, TagsAstNode, tagsPostSerializer, tagsPostParser } from './tags';
 import fetch from 'node-fetch';
 import { parseNumber, serializeNumber } from './number';
 import { parseDateTime, serializeDate, serializeTime } from './datetime';
 
 const vitestUtils = { describe, test, expect, it };
 const externalParsers = { number: parseNumber, date: parseDateTime, time: parseDateTime };
-const externalSerializers = { number: serializeNumber, date: serializeDate, time: serializeTime };
+const externalSerializers = { number: serializeNumber, date: serializeDate, time: serializeTime, tag: tagsPostSerializer };
 
 const pathExists = async (path: string) => {
   try {
@@ -65,9 +65,10 @@ describe('Full compatibility with formatjs core api', async () => {
     const makeCompatOptions = (message: string, formatjsOptions: any) => {
       const verboseParsing = {};
       const tagsHandler = {};
-      const parsingOptions = {
+      const parsingOptions: ParseIcuOptions = {
         externalParsers,
         verboseParsing,
+        postParsers: [tagsPostParser],
       };
       const ast = parseIcu(message, parsingOptions);
       for (const param in formatjsOptions ?? {}) {
@@ -85,77 +86,97 @@ describe('Full compatibility with formatjs core api', async () => {
         externalSerializers,
         original: message,
         tagsHandler,
+        postParsers: [tagsPostParser],
       };
     };
     const formatToParts = (message: string, options: {}, values: {}, locale: string) => {
       const ast = Array.isArray(message) ? message : parseIcu(message, options);
-      const interpolationSymbol = Symbol('interpolation symbol');
-      const parts = serializeIcu(ast, values, makeIntlBase(locale), {
+      const compatValues = {
+        tagsFallback: ({ children, tag }) => (children.length === 0 ? `<${tag}/>` : [`<${tag}>`, ...children, `</${tag}>`]),
+      };
+      for (const name in values) {
+        if (typeof values[name] === 'function') {
+          compatValues[name] = ({ children }) => values[name](Array.isArray(children) ? children : [children]);
+        } else {
+          compatValues[name] = values[name];
+        }
+      }
+
+      const result = serializeIcu(ast, compatValues, makeIntlBase(locale), {
         ...options,
         externalParsers,
-        reducer: {
-          getInit: () => [],
-          reduce: (acc, item, nodeType) => {
-            if (nodeType === 'variable') {
-              acc.push({ interpolationSymbol, value: item });
-              return acc;
-            }
-            const items = Array.isArray(item) ? item.flat() : [item];
-            for (const item of items) {
-              if (
-                acc.length > 0 &&
-                (typeof acc[acc.length - 1] !== 'object' || acc[acc.length - 1] === null) &&
-                (typeof item !== 'object' || item === null)
-              ) {
-                acc[acc.length - 1] += String(item);
-              } else {
-                acc.push(item);
-              }
-            }
-            return acc;
-          },
-        },
       });
-      const handleParsedTagParts = (parts: TagsAstNode[]) =>
-        parts
-          .map((part) => {
-            if (typeof part === 'string') return part;
-            if (part.interpolationSymbol === interpolationSymbol) return part.value;
-            if (part.tag) {
-              if (typeof values[part.tag] !== 'function') {
-                if (part.children.length > 0) {
-                  return `<${part.tag}>${handleParsedTagParts(part.children)}</${part.tag}>`;
-                } else {
-                  return `<${part.tag}/>`;
-                }
-              }
-              return values[part.tag](handleParsedTagParts(part.children));
-            }
-            return part;
-          })
-          .reduce((acc, item) => {
-            if (typeof item === 'string' && typeof acc[acc.length - 1] === 'string') acc[acc.length - 1] += item;
-            else if (Array.isArray(item)) acc.push(...item);
-            else acc.push(item);
-            return acc;
-          }, []);
-      const tagsParsingStore = makeTagsParsingExternalStore();
-      for (const part of parts) {
-        if (typeof part === 'string') tagsChunkParser(part, tagsParsingStore);
-        else tagsParsingStore.ast.push(part);
-      }
-      const tagsParts = handleParsedTagParts(tagsParsingStore.ast);
-      return tagsParts
-        .reduce((acc, item) => {
-          if (typeof item === 'string' && typeof acc[acc.length - 1] === 'string') acc[acc.length - 1] += item;
-          else if (Array.isArray(item)) acc.push(...item);
-          else acc.push(item);
-          return acc;
-        }, [])
-        .map((part) => {
-          if (typeof part !== 'object' || part === null) return { type: 'literal', value: part };
-          else return { type: 'object', value: part };
-        });
+
+      return (Array.isArray(result) ? result : [result]).map((part) => {
+        if (typeof part !== 'object' || part === null) return { type: 'literal', value: part };
+        else return { type: 'object', value: part };
+      });
+      // const parts = serializeIcu(ast, values, makeIntlBase(locale), {
+      //   ...options,
+      //   externalParsers,
+      //   reducer: {
+      //     getInit: () => [],
+      //     reduce: (acc, item, nodeType) => {
+      //       if (nodeType === 'variable') {
+      //         acc.push({ interpolationSymbol, value: item });
+      //         return acc;
+      //       }
+      //       const items = Array.isArray(item) ? item.flat() : [item];
+      //       for (const item of items) {
+      //         if (
+      //           acc.length > 0 &&
+      //           (typeof acc[acc.length - 1] !== 'object' || acc[acc.length - 1] === null) &&
+      //           (typeof item !== 'object' || item === null)
+      //         ) {
+      //           acc[acc.length - 1] += String(item);
+      //         } else {
+      //           acc.push(item);
+      //         }
+      //       }
+      //       return acc;
+      //     },
+      //   },
+      // });
+      // const handleParsedTagParts = (parts: TagsAstNode[]) =>
+      //   parts
+      //     .map((part) => {
+      //       if (typeof part === 'string') return part;
+      //       if (part.interpolationSymbol === interpolationSymbol) return part.value;
+      //       if (part.tag) {
+      //         if (typeof values[part.tag] !== 'function') {
+      //           if (part.children.length > 0) {
+      //             return `<${part.tag}>${handleParsedTagParts(part.children)}</${part.tag}>`;
+      //           } else {
+      //             return `<${part.tag}/>`;
+      //           }
+      //         }
+      //         return values[part.tag](handleParsedTagParts(part.children));
+      //       }
+      //       return part;
+      //     })
+      //     .reduce((acc, item) => {
+      //       if (typeof item === 'string' && typeof acc[acc.length - 1] === 'string') acc[acc.length - 1] += item;
+      //       else if (Array.isArray(item)) acc.push(...item);
+      //       else acc.push(item);
+      //       return acc;
+      //     }, []);
+      // const tagsParsingStore = makeTagsParsingExternalStore();
+      // for (const part of parts) {
+      //   if (typeof part === 'string') tagsChunkParser(part, tagsParsingStore);
+      //   else tagsParsingStore.ast.push(part);
+      // }
+      // const tagsParts = handleParsedTagParts(tagsParsingStore.ast);
+      // return tagsParts
+      //   .reduce((acc, item) => {
+      //     if (typeof item === 'string' && typeof acc[acc.length - 1] === 'string') acc[acc.length - 1] += item;
+      //     else if (Array.isArray(item)) acc.push(...item);
+      //     else acc.push(item);
+      //     return acc;
+      //   }, [])
+      //   .map((part) => {
+      //     if (typeof part !== 'object' || part === null) return { type: 'literal', value: part };
+      //     else return { type: 'object', value: part };
+      //   });
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

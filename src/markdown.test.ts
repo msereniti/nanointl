@@ -9,103 +9,74 @@ describe('markdown', () => {
     test('Simple emphasis', () => {
       expect(markdownChunkParser('How do _you_ do?')).toEqual([
         'How do ',
-        { type: 'md-token', token: 'emphasis', children: ['you'] },
+        { type: 'external', name: 'md-token', variableName: 'emphasis', data: { children: ['you'] } },
         ' do?',
       ]);
     });
     test('Multiple emphasis', () => {
       expect(markdownChunkParser('How do _you_ do, _my dude_?')).toEqual([
         'How do ',
-        { type: 'md-token', token: 'emphasis', children: ['you'] },
+        { type: 'external', name: 'md-token', variableName: 'emphasis', data: { children: ['you'] } },
         ' do, ',
-        { type: 'md-token', token: 'emphasis', children: ['my dude'] },
+        { type: 'external', name: 'md-token', variableName: 'emphasis', data: { children: ['my dude'] } },
         '?',
       ]);
     });
     test('Double symbol emphasis', () => {
       expect(markdownChunkParser('How do __you__ do?')).toEqual([
         'How do ',
-        { type: 'md-token', token: 'emphasis', children: ['you'] },
+        { type: 'external', name: 'md-token', variableName: 'emphasis', data: { children: ['you'] } },
         ' do?',
       ]);
     });
     test('Simple strong', () => {
       expect(markdownChunkParser('How do *you* do?')).toEqual([
         'How do ',
-        { type: 'md-token', token: 'strong', children: ['you'] },
+        { type: 'external', name: 'md-token', variableName: 'strong', data: { children: ['you'] } },
         ' do?',
       ]);
     });
     test('Nested emphasis and strong', () => {
       expect(markdownChunkParser('How do *_you_* do?')).toEqual([
         'How do ',
-        { type: 'md-token', token: 'strong', children: [{ type: 'md-token', token: 'emphasis', children: ['you'] }] },
+        {
+          type: 'external',
+          name: 'md-token',
+          variableName: 'strong',
+          data: {
+            children: [
+              {
+                type: 'external',
+                name: 'md-token',
+                variableName: 'emphasis',
+                data: { children: ['you'] },
+              },
+            ],
+          },
+        },
         ' do?',
       ]);
     });
     test('Inline code', () => {
       expect(markdownChunkParser('How stupid you should be to wrap `JavaScript` name into code tag?')).toEqual([
         'How stupid you should be to wrap ',
-        { type: 'md-token', token: 'code', children: ['JavaScript'] },
+        { type: 'external', name: 'md-token', variableName: 'code', data: { children: ['JavaScript'] } },
         ' name into code tag?',
       ]);
     });
-    test('Blocks', () => {
-      expect(markdownChunkParser('First line\n\nSecond line')).toEqual([
+    test('Links', () => {
+      expect(markdownChunkParser('You can get in touch with via [telegram](https://phytonmk.t.me)')).toEqual([
+        'You can get in touch with via ',
         {
-          type: 'md-token',
-          token: 'block',
-          children: ['First line'],
-        },
-        {
-          type: 'md-token',
-          token: 'block',
-          children: ['Second line'],
+          type: 'external',
+          name: 'md-token',
+          variableName: 'link',
+          data: { url: 'https://phytonmk.t.me', children: ['telegram'] },
         },
       ]);
     });
-    test('Quote block', () => {
-      expect(
-        markdownChunkParser(
-          "As Albert Einstein once said,\n\n> Don''t believe every quote you read on the internet.\n\nI love his wise words.",
-        ),
-      ).toEqual([
-        {
-          type: 'md-token',
-          token: 'block',
-          children: ['As Albert Einstein once said,'],
-        },
-        {
-          type: 'md-token',
-          token: 'quote',
-          children: ["Don't believe every quote you read on the internet."],
-        },
-        {
-          type: 'md-token',
-          token: 'block',
-          children: ['I love his wise words.'],
-        },
-      ]);
-    });
-    test('Code block', () => {
-      expect(
-        markdownChunkParser(
-          "Let''s start with a simple hello world example\n\n```\n>++++++++[<+++++++++>-]<.>++++[<+++++++>-]<+.+++++++..+++.>>++++++[<+++++++>-]<+\n+.------------.>++++++[<+++++++++>-]<+.<.+++.------.--------.>>>++++[<++++++++>-\n]<+.\n```",
-        ),
-      ).toEqual([
-        {
-          type: 'md-token',
-          token: 'block',
-          children: ["Let's start with a simple hello world example"],
-        },
-        {
-          type: 'md-token',
-          token: 'block',
-          children: [
-            '>++++++++[<+++++++++>-]<.>++++[<+++++++>-]<+.+++++++..+++.>>++++++[<+++++++>-]<+\n+.------------.>++++++[<+++++++++>-]<+.<.+++.------.--------.>>>++++[<++++++++>-\n]<+.',
-          ],
-        },
-      ]);
+    test('Square brackets', () => {
+      expect(markdownChunkParser('I really like [telegram] messenger')).toEqual(['I really like [telegram] messenger']);
     });
   });
 });
