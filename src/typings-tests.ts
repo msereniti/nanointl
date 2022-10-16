@@ -27,3 +27,21 @@ assertTypesEqual<
   X<'{a, number} {b, number} {c, number} {d, date} {e, time} {f, date}'>,
   { a: number; b: number; c: number; d: Date; e: Date; f: Date }
 >(true);
+assertTypesEqual<X<'Hello, **{username}**!'>, { username: any; strong: ({ children }: { children: unknown }) => unknown }>(true);
+assertTypesEqual<
+  X<'Hello, <strong>{username}</strong>!'>,
+  { username: any; strong: ({ children }: { children: unknown }) => unknown }
+>(true);
+assertTypesEqual<
+  X<'Hello, <strong my-useless-args>{username}</strong>!'>,
+  { username: any; strong: ({ children }: { children: unknown }) => unknown }
+>(true);
+assertTypesEqual<
+  X<'Hello, <strong>{username}</strong>, <br/> what do you want <em>to drink</em>?'>,
+  {
+    username: any;
+    strong: ({ children }: { children: unknown }) => unknown;
+    em: ({ children }: { children: unknown }) => unknown;
+    br: ({ children }: { children: unknown }) => unknown;
+  }
+>(true);

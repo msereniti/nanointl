@@ -225,3 +225,31 @@ export const markdownPlugin: NanointlPlugin<any> = {
     options.addPostParser(postParse);
   },
 };
+
+type MdStrongParser<Template extends string> = Template extends `${string}*${infer Content}*${string}`
+  ? { vars: [{ name: 'strong'; type: ({ children }: { children: unknown }) => unknown }] }
+  : { vars: [] };
+type MdEmphasisParser<Template extends string> = Template extends `${string}_${infer Content}_${string}`
+  ? { vars: [{ name: 'emphasis'; type: ({ children }: { children: unknown }) => unknown }] }
+  : { vars: [] };
+type MdCodeParser<Template extends string> = Template extends `${string}\`${infer Content}\`${string}`
+  ? { vars: [{ name: 'code'; type: ({ children }: { children: unknown }) => unknown }] }
+  : { vars: [] };
+type MdLinkParser<Template extends string> = Template extends `${string}[${infer Content}](${infer Url})${string}`
+  ? { vars: [{ name: 'link'; type: ({ children }: { children: unknown }) => unknown }] }
+  : { vars: [] };
+
+type MarkdownParser<Template extends string> = {
+  vars: [
+    ...MdStrongParser<Template>['vars'],
+    ...MdEmphasisParser<Template>['vars'],
+    ...MdCodeParser<Template>['vars'],
+    ...MdLinkParser<Template>['vars'],
+  ];
+};
+
+declare global {
+  interface NanointlOverallParsers<Template extends string> {
+    markdown: MarkdownParser<Template>;
+  }
+}

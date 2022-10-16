@@ -152,3 +152,19 @@ export const tagsPlugin: NanointlPlugin<any> = {
     options.addPostParser(tagsPostParser);
   },
 };
+
+type TagsParser<Template extends string> = Template extends `${string}<${infer TagInner}>${infer After}`
+  ? TagInner extends `/${string}`
+    ? TagsParser<After>
+    : TagInner extends `${infer TagName} ${string}`
+    ? { vars: [{ name: TagName; type: ({ children }: { children: unknown }) => unknown }, ...TagsParser<After>['vars']] }
+    : TagInner extends `${infer TagName}/`
+    ? { vars: [{ name: TagName; type: ({ children }: { children: unknown }) => unknown }, ...TagsParser<After>['vars']] }
+    : { vars: [{ name: TagInner; type: ({ children }: { children: unknown }) => unknown }, ...TagsParser<After>['vars']] }
+  : { vars: [] };
+
+declare global {
+  interface NanointlOverallParsers<Template extends string> {
+    tags: TagsParser<Template>;
+  }
+}

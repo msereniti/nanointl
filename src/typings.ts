@@ -113,7 +113,7 @@ type OptionsNestedVariables<Template extends string> = TopLevelBracketsGroup<Tem
   ? Template extends `${string} ${TopLevelBracketsGroup<Template>}${infer After}`
     ? TopLevelBracketsGroup<Template> extends `{${infer Inner}}`
       ? {
-          vars: [...VariablesInTemplate<Inner>['vars'], ...OptionsNestedVariables<After>['vars']];
+          vars: [...BracketsExpressionsOfTemplate<Inner>['vars'], ...OptionsNestedVariables<After>['vars']];
         }
       : { vars: [...OptionsNestedVariables<After>['vars']] }
     : { vars: [] }
@@ -151,36 +151,47 @@ type SelectordinalParser<Template extends string> =
     : { vars: [] };
 type SimpleVarsParser<Template extends string> = TopLevelBracketsGroup<Template> extends `{${infer Inner}}`
   ? Inner extends `${string}{${string}}${string}`
-    ? { vars: [...VariablesInTemplate<Inner>['vars']] }
+    ? { vars: [...BracketsExpressionsOfTemplate<Inner>['vars']] }
     : { vars: [{ name: Inner; type: any }] }
   : { vars: [] };
 
 declare global {
-  interface NanointlParsers<Template extends string> {
+  interface NanointlBracketsParsers<Template extends string> {
     select: SelectParser<Template>;
     plural: PluralParser<Template>;
     selectordinal: SelectordinalParser<Template>;
   }
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface NanointlOverallParsers<Template extends string> {}
 }
 
-type AllParsersList<Template extends string> = UnionToArray<UnionOfValuesOf<NanointlParsers<Template>>>;
+type BracketsParsersList<Template extends string> = UnionToArray<UnionOfValuesOf<NanointlBracketsParsers<Template>>>;
+type OverallParsersList<Template extends string> = UnionToArray<UnionOfValuesOf<NanointlOverallParsers<Template>>>;
 
-type RunAllParsers<
+type RunBracketsParsers<
   Template extends string,
-  UnhandledParsers extends any[] = AllParsersList<Template>,
+  UnhandledParsers extends any[] = BracketsParsersList<Template>,
 > = UnhandledParsers['length'] extends 1
   ? { vars: [...UnhandledParsers[0]['vars']] }
   : {
-      vars: [...UnhandledParsers[0]['vars'], ...RunAllParsers<Template, ArrayShiftAny<UnhandledParsers>>['vars']];
+      vars: [...UnhandledParsers[0]['vars'], ...RunBracketsParsers<Template, ArrayShiftAny<UnhandledParsers>>['vars']];
+    };
+type RunOverallParsers<
+  Template extends string,
+  UnhandledParsers extends any[] = OverallParsersList<Template>,
+> = UnhandledParsers['length'] extends 1
+  ? { vars: [...UnhandledParsers[0]['vars']] }
+  : {
+      vars: [...UnhandledParsers[0]['vars'], ...RunBracketsParsers<Template, ArrayShiftAny<UnhandledParsers>>['vars']];
     };
 
-type VariablesInTemplate<Template extends string> = TopLevelBracketsGroup<Template> extends string
+type BracketsExpressionsOfTemplate<Template extends string> = TopLevelBracketsGroup<Template> extends string
   ? Template extends `${string}${TopLevelBracketsGroup<Template>}${infer After}`
-    ? RunAllParsers<Template>['vars']['length'] extends 0
-      ? { vars: [...SimpleVarsParser<Template>['vars'], ...VariablesInTemplate<After>['vars']] }
+    ? RunBracketsParsers<Template>['vars']['length'] extends 0
+      ? { vars: [...SimpleVarsParser<Template>['vars'], ...BracketsExpressionsOfTemplate<After>['vars']] }
       : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        { vars: [...RunAllParsers<Template>['vars'], ...VariablesInTemplate<After>['vars']] }
+        { vars: [...RunBracketsParsers<Template>['vars'], ...BracketsExpressionsOfTemplate<After>['vars']] }
     : { vars: [] }
   : { vars: [] };
 
@@ -200,4 +211,21 @@ type VariablesArrToMap<VariablesArr extends { name: string; type: any }[]> = Var
         : never;
     };
 
-export type ICUVariablesMapFromTemplate<Template extends string> = VariablesArrToMap<VariablesInTemplate<Template>['vars']>;
+type ICUVariablesArrayFromTemplate<Template extends string> = [
+  ...BracketsExpressionsOfTemplate<Template>['vars'],
+  ...RunOverallParsers<Template>['vars'],
+];
+
+export type ICUVariablesMapFromTemplate<Template extends string> = VariablesArrToMap<ICUVariablesArrayFromTemplate<Template>>;
+
+type CastNonObjectPropertiesToString<Values extends { [key: string]: any }> = {
+  [Key in keyof Values]: Values[Key] extends { [key: string]: any } ? Values[Key] : string;
+};
+type CastMethodsToReturnType<Values extends { [key: string]: any }> = {
+  [Key in keyof Values]: Values[Key] extends (...args: any[]) => infer ReturnType ? ReturnType : Values[Key];
+};
+export type SerializationResult<Values extends { [key: string]: any }> = UnionOfValuesOf<
+  CastMethodsToReturnType<CastNonObjectPropertiesToString<Values>>
+> extends string
+  ? string
+  : UnionOfValuesOf<CastMethodsToReturnType<CastNonObjectPropertiesToString<Values>>>[];

@@ -23,9 +23,7 @@ export const App: React.FC = () => {
         <p>
           {t('description', {
             filePath: 'src/App.tsx',
-            code: ({ children }) => {
-              return <code>{children}</code>;
-            },
+            code: ({ children }) => <code>{children}</code>,
           })}
         </p>
       </div>

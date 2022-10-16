@@ -1,8 +1,7 @@
 import { makeIntlBase } from './intlBase';
 import { AstNode, ExternalParser, ExternalParsers, parseIcu, ParseIcuOptions, PostParser } from './parse';
-import { ExternalSerializer, ExternalSerializers, serializeIcu, PreSerializer } from './serialize';
-import { preSerialize } from './tags';
-import { ICUVariablesMapFromTemplate } from './typings';
+import { ExternalSerializer, ExternalSerializers, serializeIcu } from './serialize';
+import { ICUVariablesMapFromTemplate, SerializationResult } from './typings';
 
 type RequiredButUndefinedPossible<T extends {}> = {
   [K in keyof T]: T[K] | undefined;
@@ -15,10 +14,13 @@ type EntitiesOfMessage<Message extends string> = string extends Message
     }
   : RequiredButUndefinedPossible<NeverIfObjectHasNoProperties<ICUVariablesMapFromTemplate<Message>>>;
 
-export type FormatMessage<Messages extends { [messageId: string]: string }> = <MessageKey extends keyof Messages>(
+export type FormatMessage<Messages extends { [messageId: string]: string }> = <
+  MessageKey extends keyof Messages,
+  Values extends EntitiesOfMessage<Messages[MessageKey]>,
+>(
   messageId: MessageKey,
-  values?: EntitiesOfMessage<Messages[MessageKey]>,
-) => string;
+  values?: Values,
+) => SerializationResult<Values>;
 
 export type NanointlPlugin<
   Params = unknown,
@@ -80,7 +82,6 @@ export const makeIntl = <
     postParsers,
   };
   for (const messageId in messages) {
-    // astStore[messageId] = postParsers.reduce((ast, postParser) => postParser(ast), parseIcu(messages[messageId], parsingOptions));
     astStore[messageId] = parseIcu(messages[messageId], parsingOptions);
   }
 
@@ -96,15 +97,6 @@ export const makeIntl = <
         externalSerializers,
         original: messages[messageId],
       });
-      // const processedAst = preSerializers.reduce((ast, preSerialize) => preSerialize(ast), ast);
-
-      // return processedAst.map((node) => {
-      //   console.log({ node });
-      //   return serializeIcu(node, values ?? {}, intlBase, {
-      //     externalSerializers,
-      //     original: messages[messageId],
-      //   });
-      // });
     }) as FM,
   };
 };

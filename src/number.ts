@@ -188,7 +188,7 @@ type NumberParser<Template extends string> =
     : { vars: [] };
 
 declare global {
-  interface NanointlParsers<Template extends string> {
+  interface NanointlBracketsParsers<Template extends string> {
     number: NumberParser<Template>;
   }
 }
