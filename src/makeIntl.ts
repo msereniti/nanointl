@@ -8,19 +8,22 @@ type RequiredButUndefinedPossible<T extends {}> = {
 };
 type NeverIfObjectHasNoProperties<T extends {}> = {} extends T ? never : T;
 
-type EntitiesOfMessage<Message extends string> = string extends Message
+type EntitiesOfMessage<Message extends string, Values extends { [key: string]: any } = {}> = string extends Message
   ? { [key: string]: any } & {
       how_to_add_autocomplete_and_strict_types_checking_for_nanointl?: 'http://github.com/phytonmk/nanointl/#strict-typings';
     }
-  : RequiredButUndefinedPossible<NeverIfObjectHasNoProperties<ICUVariablesMapFromTemplate<Message>>>;
+  : NeverIfObjectHasNoProperties<RequiredButUndefinedPossible<ICUVariablesMapFromTemplate<Message, Values>>>;
 
 export type FormatMessage<Messages extends { [messageId: string]: string }> = <
   MessageKey extends keyof Messages,
-  Values extends EntitiesOfMessage<Messages[MessageKey]>,
+  Values extends EntitiesOfMessage<Messages[MessageKey], Values>,
 >(
   messageId: MessageKey,
   values?: Values,
-) => SerializationResult<Values>;
+) => SerializationResult<Values> &
+  (<MessageKey extends keyof Messages>(
+    messageId: EntitiesOfMessage<Messages[MessageKey], {}> extends never ? MessageKey : never,
+  ) => string);
 
 export type NanointlPlugin<
   Params = unknown,

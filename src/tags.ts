@@ -1,5 +1,13 @@
 import { NanointlPlugin } from './makeIntl';
 import { AstNode } from './parse';
+import {
+  UnwrapLinkedSleeve,
+  LinkedSleeveNexusLimit,
+  Increment,
+  Decrement,
+  ICUVariablesMapFromTemplate,
+  SerializationResult,
+} from './typings';
 
 type TagNode = {
   type: 'external';
@@ -153,18 +161,86 @@ export const tagsPlugin: NanointlPlugin<any> = {
   },
 };
 
-type TagsParser<Template extends string> = Template extends `${string}<${infer TagInner}>${infer After}`
+type TraverseTagContent<
+  TagName extends string,
+  Template extends string,
+  Depth extends number = 0,
+  NexusLength extends number = 0,
+  Escaping extends boolean = false,
+> = NexusLength extends LinkedSleeveNexusLimit
+  ? { next: UnwrapLinkedSleeve<TraverseTagContent<TagName, Template, Depth, 0, Escaping>> }
+  : Template extends `${infer Char}${infer Rest}`
+  ? Escaping extends false
+    ? Char extends "'"
+      ? Rest extends `'${infer Rest}`
+        ? ["'", TraverseTagContent<TagName, Rest, Depth, Increment<NexusLength>, Escaping>]
+        : TraverseTagContent<TagName, Rest, Depth, Increment<NexusLength>, true>
+      : Template extends `<${TagName}>${infer Rest}`
+      ? [`<${TagName}>`, TraverseTagContent<TagName, Rest, Increment<Depth>, Increment<NexusLength>, Escaping>]
+      : Template extends `<${TagName} ${infer TagAttributes}>${infer Rest}`
+      ? [`<${TagName} ${TagAttributes}>`, TraverseTagContent<TagName, Rest, Increment<Depth>, Increment<NexusLength>, Escaping>]
+      : Template extends `</${TagName}>${infer Rest}`
+      ? Depth extends 0
+        ? []
+        : [`</${TagName}>`, TraverseTagContent<TagName, Rest, Decrement<Depth>, Increment<NexusLength>, Escaping>]
+      : [Char, TraverseTagContent<TagName, Rest, Depth, Increment<NexusLength>, Escaping>]
+    : Char extends "'"
+    ? TraverseTagContent<TagName, Rest, Depth, Increment<NexusLength>, false>
+    : [Char, TraverseTagContent<TagName, Rest, Depth, Increment<NexusLength>, Escaping>]
+  : [];
+
+type ExtractTagChildrenContent<
+  TagName extends string,
+  Template extends string,
+  Result = UnwrapLinkedSleeve<TraverseTagContent<TagName, Template>>[0],
+> = Result extends string ? Result : '';
+
+type ChildrenSerializationResults<
+  Template extends string,
+  Values extends {} = {},
+> = keyof ICUVariablesMapFromTemplate<Template> extends keyof Values
+  ? SerializationResult<Pick<Values, keyof ICUVariablesMapFromTemplate<Template>>>
+  : string;
+
+type TagsParser<Template extends string, Values extends {} = {}> = Template extends `${string}<${infer TagInner}>${infer After}`
   ? TagInner extends `/${string}`
     ? TagsParser<After>
     : TagInner extends `${infer TagName} ${string}`
-    ? { vars: [{ name: TagName; type: ({ children }: { children: unknown }) => unknown }, ...TagsParser<After>['vars']] }
+    ? {
+        vars: [
+          {
+            name: TagName;
+            type: (props: { children: ChildrenSerializationResults<ExtractTagChildrenContent<TagName, After>, Values> }) => any;
+          },
+          ...TagsParser<After>['vars'],
+        ];
+      }
     : TagInner extends `${infer TagName}/`
-    ? { vars: [{ name: TagName; type: ({ children }: { children: unknown }) => unknown }, ...TagsParser<After>['vars']] }
-    : { vars: [{ name: TagInner; type: ({ children }: { children: unknown }) => unknown }, ...TagsParser<After>['vars']] }
+    ? {
+        vars: [
+          {
+            name: TagName;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            type: () => any;
+          },
+          ...TagsParser<After>['vars'],
+        ];
+      }
+    : {
+        vars: [
+          {
+            name: TagInner;
+            type: (props: { children: ChildrenSerializationResults<ExtractTagChildrenContent<TagInner, After>, Values> }) => any;
+          },
+          ...TagsParser<After>['vars'],
+        ];
+      }
   : { vars: [] };
 
 declare global {
-  interface NanointlOverallParsers<Template extends string> {
-    tags: TagsParser<Template>;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  interface NanointlOverallParsers<Template extends string, Values extends {} = {}> {
+    tags: TagsParser<Template, Values>;
   }
 }

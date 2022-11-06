@@ -1,4 +1,12 @@
 import { NanointlPlugin } from './makeIntl';
+import {
+  Decrement,
+  ICUVariablesMapFromTemplate,
+  Increment,
+  LinkedSleeveNexusLimit,
+  SerializationResult,
+  UnwrapLinkedSleeve,
+} from './typings';
 
 type MarkdownEmphasisNode = {
   type: 'external';
@@ -226,30 +234,105 @@ export const markdownPlugin: NanointlPlugin<any> = {
   },
 };
 
-type MdStrongParser<Template extends string> = Template extends `${string}*${infer Content}*${string}`
-  ? { vars: [{ name: 'strong'; type: ({ children }: { children: unknown }) => unknown }] }
-  : { vars: [] };
-type MdEmphasisParser<Template extends string> = Template extends `${string}_${infer Content}_${string}`
-  ? { vars: [{ name: 'emphasis'; type: ({ children }: { children: unknown }) => unknown }] }
-  : { vars: [] };
-type MdCodeParser<Template extends string> = Template extends `${string}\`${infer Content}\`${string}`
-  ? { vars: [{ name: 'code'; type: ({ children }: { children: unknown }) => unknown }] }
-  : { vars: [] };
-type MdLinkParser<Template extends string> = Template extends `${string}[${infer Content}](${infer Url})${string}`
-  ? { vars: [{ name: 'link'; type: ({ children }: { children: unknown }) => unknown }] }
+type TraverseTokenContent<
+  Token extends string,
+  Template extends string,
+  Depth extends number = 0,
+  NexusLength extends number = 0,
+  Escaping extends boolean = false,
+> = NexusLength extends LinkedSleeveNexusLimit
+  ? { next: UnwrapLinkedSleeve<TraverseTokenContent<Token, Template, Depth, 0, Escaping>> }
+  : Template extends `${infer Char}${infer Rest}`
+  ? Escaping extends false
+    ? Char extends "'"
+      ? Rest extends `'${infer Rest}`
+        ? ["'", TraverseTokenContent<Token, Rest, Depth, Increment<NexusLength>, Escaping>]
+        : TraverseTokenContent<Token, Rest, Depth, Increment<NexusLength>, true>
+      : Template extends `${Token}${infer Rest}`
+      ? Depth extends 0
+        ? []
+        : [Token, TraverseTokenContent<Token, Rest, Decrement<Depth>, Increment<NexusLength>, Escaping>]
+      : [Char, TraverseTokenContent<Token, Rest, Depth, Increment<NexusLength>, Escaping>]
+    : Char extends "'"
+    ? TraverseTokenContent<Token, Rest, Depth, Increment<NexusLength>, false>
+    : [Char, TraverseTokenContent<Token, Rest, Depth, Increment<NexusLength>, Escaping>]
+  : [];
+
+type ExtractTokenChildrenContent<
+  Token extends string,
+  Template extends string,
+  Result = UnwrapLinkedSleeve<TraverseTokenContent<Token, Template>>[0],
+> = Result extends string ? Result : '';
+
+type ChildrenSerializationResults<
+  Template extends string,
+  Values extends {} = {},
+> = keyof ICUVariablesMapFromTemplate<Template> extends keyof Values
+  ? SerializationResult<Pick<Values, keyof ICUVariablesMapFromTemplate<Template>>>
+  : string;
+
+type TokenParser<
+  TokenName extends string,
+  Token extends string,
+  TokenFallback extends string,
+  Template extends string,
+  Values extends {} = {},
+> = Template extends `${string}${Token}${infer After}`
+  ? After extends `${string}${Token}${string}`
+    ? {
+        vars: [
+          {
+            name: TokenName;
+            type: (props: { children: ChildrenSerializationResults<ExtractTokenChildrenContent<Token, After>, Values> }) => any;
+          },
+          ...TokenParser<TokenName, Token, TokenFallback, After, Values>['vars'],
+        ];
+      }
+    : TokenParser<TokenName, Token, TokenFallback, After, Values>
+  : Template extends `${string}${TokenFallback}${infer After}`
+  ? After extends `${string}${TokenFallback}${string}`
+    ? {
+        vars: [
+          {
+            name: TokenName;
+            type: (props: {
+              children: ChildrenSerializationResults<ExtractTokenChildrenContent<TokenFallback, After>, Values>;
+            }) => any;
+          },
+          ...TokenParser<TokenName, Token, TokenFallback, After, Values>['vars'],
+        ];
+      }
+    : TokenParser<TokenName, Token, TokenFallback, After, Values>
   : { vars: [] };
 
-type MarkdownParser<Template extends string> = {
+type LinkTokenParser<
+  Template extends string,
+  Values extends {} = {},
+> = Template extends `${string}[${infer Content}](${infer Url})${infer After}`
+  ? {
+      vars: [
+        {
+          name: 'link';
+          children: (props: { url: Url; children: ChildrenSerializationResults<Content, Values> }) => any;
+        },
+        ...LinkTokenParser<After, Values>['vars'],
+      ];
+    }
+  : { vars: [] };
+
+type MarkdownParser<Template extends string, Values extends {} = {}> = {
   vars: [
-    ...MdStrongParser<Template>['vars'],
-    ...MdEmphasisParser<Template>['vars'],
-    ...MdCodeParser<Template>['vars'],
-    ...MdLinkParser<Template>['vars'],
+    ...TokenParser<'strong', '**', '*', Template, Values>['vars'],
+    ...TokenParser<'emphasis', '__', '_', Template, Values>['vars'],
+    ...TokenParser<'code', '`', never, Template, Values>['vars'],
+    ...LinkTokenParser<Template, Values>['vars'],
   ];
 };
 
 declare global {
-  interface NanointlOverallParsers<Template extends string> {
-    markdown: MarkdownParser<Template>;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  interface NanointlOverallParsers<Template extends string, Values extends {} = {}> {
+    markdown: MarkdownParser<Template, Values>;
   }
 }

@@ -2,8 +2,8 @@ import { makeReactIntl } from '../../../packages/nanointl-react/src/nanointl-rea
 import enMessages from './locales/en.json';
 import { numberPlugin } from '../../../src/number';
 import { dateTimePlugin } from '../../../src/datetime';
-import { markdownPlugin } from '../../../src/markdown';
+import { tagsPlugin } from '../../../src/tags';
 
 export const { IntlProvider, useTranslation, useIntlControls } = makeReactIntl('en', enMessages, {
-  plugins: [numberPlugin, dateTimePlugin, markdownPlugin],
+  plugins: [numberPlugin, dateTimePlugin, tagsPlugin],
 });

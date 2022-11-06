@@ -7,7 +7,7 @@ type ArrayOfLength<Length extends number, Arr extends any[] = []> = Arr['length'
   : Arr['length'] extends Length
   ? Arr
   : ArrayOfLength<Length, ArrayPushAny<Arr>>;
-type Increment<
+export type Increment<
   Value extends number,
   ArrayOfIncrementedLength = ArrayPushAny<ArrayOfLength<Value>>,
 > = ArrayOfIncrementedLength extends any[]
@@ -15,7 +15,7 @@ type Increment<
     ? ArrayOfIncrementedLength['length']
     : Value
   : Value;
-type Decrement<
+export type Decrement<
   Value extends number,
   ArrayOfDecrementedLength = ArrayPopAny<ArrayOfLength<Value>>,
 > = ArrayOfDecrementedLength extends any[]
@@ -32,47 +32,46 @@ type UnionToArray<T, A extends unknown[] = []> = IsUnion<T> extends true
   : [T, ...A];
 type UnionOfValuesOf<T> = T[keyof T];
 
-type _TraverseLevelBracketsGroup<
+type TraverseLevelBracketsGroup<
   Template extends string,
   Depth extends number = 0,
-  Length extends number = 0,
+  NexusLength extends number = 0,
   Escaping extends boolean = false,
-> = Length extends 45
-  ? {
-      next: _UnwrapLevelBracketsGroup<_TraverseLevelBracketsGroup<Template, Depth, 0, Escaping>>;
-    }
+> = NexusLength extends LinkedSleeveNexusLimit
+  ? { next: UnwrapLinkedSleeve<TraverseLevelBracketsGroup<Template, Depth, 0, Escaping>> }
   : Template extends `${infer Char}${infer Rest}`
   ? Escaping extends false
     ? Char extends "'"
-      ? _TraverseLevelBracketsGroup<Rest, Depth, Increment<Length>, true>
+      ? TraverseLevelBracketsGroup<Rest, Depth, Increment<NexusLength>, true>
       : Char extends '{'
-      ? [Char, _TraverseLevelBracketsGroup<Rest, Increment<Depth>, Increment<Length>, Escaping>]
+      ? [Char, TraverseLevelBracketsGroup<Rest, Increment<Depth>, Increment<NexusLength>, Escaping>]
       : Char extends '}'
       ? Depth extends 1
         ? ['}']
-        : [Char, _TraverseLevelBracketsGroup<Rest, Decrement<Depth>, Increment<Length>, Escaping>]
+        : [Char, TraverseLevelBracketsGroup<Rest, Decrement<Depth>, Increment<NexusLength>, Escaping>]
       : Depth extends 0
-      ? _TraverseLevelBracketsGroup<Rest, Depth, Increment<Length>, Escaping>
-      : [Char, _TraverseLevelBracketsGroup<Rest, Depth, Increment<Length>, Escaping>]
+      ? TraverseLevelBracketsGroup<Rest, Depth, Increment<NexusLength>, Escaping>
+      : [Char, TraverseLevelBracketsGroup<Rest, Depth, Increment<NexusLength>, Escaping>]
     : Char extends `${'{' | '}'}`
     ? Depth extends 0
-      ? _TraverseLevelBracketsGroup<Rest, Depth, Increment<Length>, Escaping>
-      : [Char, _TraverseLevelBracketsGroup<Rest, Depth, Increment<Length>, Escaping>]
+      ? TraverseLevelBracketsGroup<Rest, Depth, Increment<NexusLength>, Escaping>
+      : [Char, TraverseLevelBracketsGroup<Rest, Depth, Increment<NexusLength>, Escaping>]
     : Char extends "'"
     ? Depth extends 0
-      ? _TraverseLevelBracketsGroup<Rest, Depth, Increment<Length>, false>
-      : [Char, [Char, _TraverseLevelBracketsGroup<Rest, Depth, Increment<Length>, false>]]
-    : _TraverseLevelBracketsGroup<Rest, Depth, Increment<Length>, Escaping>
+      ? TraverseLevelBracketsGroup<Rest, Depth, Increment<NexusLength>, false>
+      : [Char, [Char, TraverseLevelBracketsGroup<Rest, Depth, Increment<NexusLength>, false>]]
+    : TraverseLevelBracketsGroup<Rest, Depth, Increment<NexusLength>, Escaping>
   : [];
 
-type _UnwrapLevelBracketsGroup<Items extends any[]> = Items extends [infer A, [infer B, infer C]]
+export type LinkedSleeveNexusLimit = 45;
+export type UnwrapLinkedSleeve<Items extends any[]> = Items extends [infer A, [infer B, infer C]]
   ? A extends string
     ? B extends string
-      ? _UnwrapLevelBracketsGroup<[`${A}${B}`, C]>
+      ? UnwrapLinkedSleeve<[`${A}${B}`, C]>
       : Items
     : Items
   : Items extends [infer A, { next: infer B }]
-  ? _UnwrapLevelBracketsGroup<[A, B]>
+  ? UnwrapLinkedSleeve<[A, B]>
   : Items extends [infer A, [infer B]]
   ? A extends string
     ? B extends string
@@ -87,11 +86,11 @@ type _UnwrapLevelBracketsGroup<Items extends any[]> = Items extends [infer A, [i
     : Items
   : Items;
 
-type _FinalTopLevelBracketsGroup<
+type FinalTopLevelBracketsGroup<
   Template extends string,
-  BracketsGroup = _UnwrapLevelBracketsGroup<_TraverseLevelBracketsGroup<Template>>,
+  BracketsGroup = UnwrapLinkedSleeve<TraverseLevelBracketsGroup<Template>>,
 > = BracketsGroup extends string ? BracketsGroup : never;
-export type TopLevelBracketsGroup<Template extends string> = _FinalTopLevelBracketsGroup<Template>;
+export type TopLevelBracketsGroup<Template extends string> = FinalTopLevelBracketsGroup<Template>;
 
 type TrimHeadingComa<Template extends string> = Template extends ` ${infer Rest}`
   ? TrimHeadingComa<Rest>
@@ -162,11 +161,13 @@ declare global {
     selectordinal: SelectordinalParser<Template>;
   }
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface NanointlOverallParsers<Template extends string> {}
+  interface NanointlOverallParsers<Template extends string, Values extends { [key: string]: any } = {}> {}
 }
 
 type BracketsParsersList<Template extends string> = UnionToArray<UnionOfValuesOf<NanointlBracketsParsers<Template>>>;
-type OverallParsersList<Template extends string> = UnionToArray<UnionOfValuesOf<NanointlOverallParsers<Template>>>;
+type OverallParsersList<Template extends string, Values extends { [key: string]: any } = {}> = UnionToArray<
+  UnionOfValuesOf<NanointlOverallParsers<Template, Values>>
+>;
 
 type RunBracketsParsers<
   Template extends string,
@@ -178,11 +179,12 @@ type RunBracketsParsers<
     };
 type RunOverallParsers<
   Template extends string,
-  UnhandledParsers extends any[] = OverallParsersList<Template>,
+  Values extends { [key: string]: any } = {},
+  UnhandledParsers extends any[] = OverallParsersList<Template, Values>,
 > = UnhandledParsers['length'] extends 1
   ? { vars: [...UnhandledParsers[0]['vars']] }
   : {
-      vars: [...UnhandledParsers[0]['vars'], ...RunBracketsParsers<Template, ArrayShiftAny<UnhandledParsers>>['vars']];
+      vars: [...UnhandledParsers[0]['vars'], ...RunOverallParsers<Template, Values, ArrayShiftAny<UnhandledParsers>>['vars']];
     };
 
 type BracketsExpressionsOfTemplate<Template extends string> = TopLevelBracketsGroup<Template> extends string
@@ -211,12 +213,14 @@ type VariablesArrToMap<VariablesArr extends { name: string; type: any }[]> = Var
         : never;
     };
 
-type ICUVariablesArrayFromTemplate<Template extends string> = [
+type ICUVariablesArrayFromTemplate<Template extends string, Values extends { [key: string]: any } = {}> = [
   ...BracketsExpressionsOfTemplate<Template>['vars'],
-  ...RunOverallParsers<Template>['vars'],
+  ...RunOverallParsers<Template, Values>['vars'],
 ];
 
-export type ICUVariablesMapFromTemplate<Template extends string> = VariablesArrToMap<ICUVariablesArrayFromTemplate<Template>>;
+export type ICUVariablesMapFromTemplate<Template extends string, Values extends { [key: string]: any } = {}> = VariablesArrToMap<
+  ICUVariablesArrayFromTemplate<Template, Values>
+>;
 
 type CastNonObjectPropertiesToString<Values extends { [key: string]: any }> = {
   [Key in keyof Values]: Values[Key] extends { [key: string]: any } ? Values[Key] : string;
