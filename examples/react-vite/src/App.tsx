@@ -1,7 +1,27 @@
 import React, { useState } from 'react';
 import reactLogo from './assets/react.svg';
 import './App.css';
-import { useTranslation } from './i18n';
+import { useIntlControls, useTranslation } from './i18n';
+
+const LocaleControl: React.FC = () => {
+  const { getAvailableLocales, getCurrentLocale, loadLocale, setLocale } = useIntlControls();
+  const locales = React.useMemo(getAvailableLocales, [getAvailableLocales]);
+  const handleLocaleChange = React.useCallback(async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const locale = event.target.value;
+    await loadLocale(locale);
+    setLocale(locale);
+  }, []);
+
+  return (
+    <select value={getCurrentLocale()} onChange={handleLocaleChange}>
+      {locales.map((locale) => (
+        <option key={locale} value={locale}>
+          {locale}
+        </option>
+      ))}
+    </select>
+  );
+};
 
 export const App: React.FC = () => {
   const [count, setCount] = useState(0);
@@ -23,11 +43,18 @@ export const App: React.FC = () => {
         <p>
           {t('description', {
             filePath: 'src/App.tsx',
-            code: ({ children }) => <code>{children}</code>,
+            code: ({ children }) => <code key="code">{children}</code>,
           })}
         </p>
       </div>
-      <p className="read-the-docs">{t('readTheDocs')}</p>
+      <div>
+        <LocaleControl />
+      </div>
+      <p className="read-the-docs">
+        {t('readTheDocs', {
+          b: ({ children }) => <b key={children}>{children}</b>,
+        })}
+      </p>
     </div>
   );
 };

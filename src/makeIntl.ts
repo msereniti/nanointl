@@ -25,11 +25,7 @@ export type FormatMessage<Messages extends { [messageId: string]: string }> = <
     messageId: EntitiesOfMessage<Messages[MessageKey], {}> extends never ? MessageKey : never,
   ) => string);
 
-export type NanointlPlugin<
-  Params = unknown,
-  // PluginInputAst extends AstNode[] = AstNode[],
-  // PluginOutputAst extends AstNode[] = AstNode[],
-> = {
+export type NanointlPlugin<Params = unknown> = {
   name: string;
   init: (options: {
     addParser: (token: string, parser: ExternalParser<Params>) => void;
@@ -40,6 +36,7 @@ export type NanointlPlugin<
 
 export type MakeIntlOptions = {
   verboseParsing?: { [variableName: string]: any };
+  disableCache?: boolean;
   plugins?: NanointlPlugin<any>[];
 };
 
@@ -48,6 +45,25 @@ export type IntlInstance<
   FM extends FormatMessage<Messages> = FormatMessage<Messages>,
 > = {
   formatMessage: FM;
+  clearCache: () => void;
+};
+
+type Cache = { s: Map<any, Cache>; w: WeakMap<any, Cache>; v: string | undefined };
+const getFromCache = <T = unknown>(cache: Cache, path: any[]): T => {
+  if (!cache) return cache;
+  if (path.length === 0) return cache.v as T;
+  if (typeof path[0] === 'object' && path[0] !== null) return getFromCache(cache?.w.get(path[0]) as Cache, path.slice(1));
+  return getFromCache(cache?.s.get(path[0]) as Cache, path.slice(1));
+};
+const addToCache = <T>(cache: Cache, path: any[], value: T): T => {
+  if (path.length === 0) return (cache.v = value);
+  const pathHeadIsObject = typeof path[0] === 'object' && path[0] !== null;
+  const nextCacheNode = pathHeadIsObject ? cache.w.get(path[0]) : cache.s.get(path[0]);
+  if (!nextCacheNode) {
+    if (pathHeadIsObject) cache.w.set(path[0], { s: new Map(), w: new WeakMap(), v: undefined });
+    else cache.s.set(path[0], { s: new Map(), w: new WeakMap(), v: undefined });
+  }
+  return addToCache((pathHeadIsObject ? cache.w.get(path[0]) : cache.s.get(path[0]))!, path.slice(1), value);
 };
 
 export const makeIntl = <
@@ -59,6 +75,7 @@ export const makeIntl = <
   options?: MakeIntlOptions,
 ): IntlInstance<Messages, FM> => {
   const astStore: { [messageId: string]: AstNode[] } = {};
+  const cache: Cache = { s: new Map(), w: new WeakMap(), v: undefined };
   const externalParsers: ExternalParsers = {};
   const externalSerializers: ExternalSerializers = {};
   const postParsers: PostParser<AstNode[], AstNode[]>[] = [];
@@ -94,12 +111,21 @@ export const makeIntl = <
       if (!(messageId in astStore)) {
         return String(messageId);
       }
+      const cachePath = [messageId, ...Object.values(values ?? {})];
+      const cached = getFromCache(cache, cachePath);
+      if (cached) return cached;
       const ast = astStore[messageId as keyof typeof astStore];
-
-      return serializeIcu(ast, values ?? {}, intlBase, {
+      const result = serializeIcu(ast, values ?? {}, intlBase, {
         externalSerializers,
         original: messages[messageId],
       });
+      if (options?.disableCache) return result;
+      return addToCache(cache, cachePath, result);
     }) as FM,
+    clearCache: () => {
+      cache.s = new Map();
+      cache.w = new WeakMap();
+      cache.v = undefined;
+    },
   };
 };

@@ -1,0 +1,29 @@
+{
+  "name": "@nanointl/unplugin",
+  "source": "src/nanointl-unplugin.ts",
+  "main": "dist/nanointl-unplugin.js",
+  "umd:main": "dist/nanointl-unplugin.umd.js",
+  "module": "dist/nanointl-unplugin.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/nanointl-unplugin.d.ts",
+      "require": "./dist/nanointl-unplugin.js",
+      "default": "./dist/nanointl-unplugin.mjs"
+    },
+    "./runtime": {
+      "types": "./runtime.d.ts",
+      "require": "./dist/runtime.js",
+      "default": "./dist/runtime.mjs"
+    }
+  },
+  "types": "dist/nanointl-unplugin.d.ts",
+  "scripts": {
+    "build": "rm -rf dist && microbundle && cp fake-runtime/* dist"
+  },
+  "dependencies": {
+    "unplugin": "^0.10.2"
+  },
+  "devDependencies": {
+    "microbundle": "^0.15.1"
+  }
+}

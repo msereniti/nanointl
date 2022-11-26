@@ -5,13 +5,21 @@ type IntlControls<Messages extends { [messageId: string]: string }> = {
   addLocale: (locale: string, messages: Messages) => void;
   setLocale: (locale: string) => void;
   deleteLocale: (locale: string) => void;
+  getAvailableLocales: () => string[];
+  loadLocale: (locale: string) => Promise<void>;
+  getCurrentLocale: () => string;
 };
 
-const IntlContext = React.createContext<{ intl: IntlInstance<any>; controls: IntlControls<any> } | null>(null);
+type Context = { intl: IntlInstance<any>; controls: IntlControls<any> };
+const context = React.createContext<Context | null>(null);
 
 const noContextError = `You need to wrap your app into <IntlProvider />`;
 const multipleProvidersError = `You can use only one instance of IntlProvider from makeReactIntl() returned value`;
 const lastLocaleError = `Unable to delete last left locale`;
+
+type NanointlReactOptions = MakeIntlOptions & {
+  loadMessages?: { [localeName: string]: () => Promise<{ [messageId: string]: string }> };
+};
 
 export const makeReactIntl = <
   Messages extends { [messageId: string]: string },
@@ -19,19 +27,28 @@ export const makeReactIntl = <
 >(
   defaultLocale: string,
   defaultLocaleMessages: Messages,
-  options?: MakeIntlOptions,
+  options: NanointlReactOptions = {},
 ) => {
-  const intlContainer = { [defaultLocale]: makeIntl(defaultLocale, defaultLocaleMessages, options) };
+  const { loadMessages, ...nanointlOptions } = options;
+  const intlContainer = { [defaultLocale]: makeIntl(defaultLocale, defaultLocaleMessages, nanointlOptions) };
   let proviedLocaleListener: null | ((locale: string) => void) = null;
   let currentLocale = defaultLocale;
 
   const addLocale = (locale: string, messages: Messages) => {
-    intlContainer[locale] = makeIntl(locale, messages, options);
+    intlContainer[locale] = makeIntl(locale, messages, nanointlOptions);
   };
   const setLocale = (locale: string) => {
     if (!intlContainer[locale]) throw new Error(`Locale "${locale}" was not provided`);
-    currentLocale = locale;
-    proviedLocaleListener?.(locale);
+    if (currentLocale !== locale) {
+      currentLocale = locale;
+      proviedLocaleListener?.(locale);
+    }
+  };
+  const getAvailableLocales = () => [...new Set([...Object.keys(intlContainer), ...Object.keys(loadMessages || {})])];
+  const loadLocale = async (locale: string) => {
+    if (!loadMessages) return;
+    const messages = await loadMessages[locale]?.();
+    intlContainer[locale] = makeIntl(locale, messages, nanointlOptions);
   };
   const deleteLocale = (locale: string) => {
     if (locale === currentLocale) {
@@ -45,8 +62,16 @@ export const makeReactIntl = <
     }
     delete intlContainer[locale];
   };
+  const getCurrentLocale = () => currentLocale;
 
-  const controls: IntlControls<Messages> = { addLocale, setLocale, deleteLocale };
+  const controls: IntlControls<Messages> = {
+    addLocale,
+    setLocale,
+    deleteLocale,
+    getAvailableLocales,
+    loadLocale,
+    getCurrentLocale,
+  };
   const IntlProvider: React.FC<{ children: React.ReactNode; locale?: string }> = ({ children, locale }) => {
     const [intl, setIntl] = React.useState(intlContainer[defaultLocale]);
     React.useEffect(() => {
@@ -65,15 +90,15 @@ export const makeReactIntl = <
       };
     }, []);
     const ctx = React.useMemo(() => ({ intl, controls }), [intl, controls]);
-    return <IntlContext.Provider value={ctx}>{children}</IntlContext.Provider>;
+    return <context.Provider value={ctx}>{children}</context.Provider>;
   };
   const useIntlControls = (): IntlControls<Messages> => {
-    const ctx = React.useContext(IntlContext);
+    const ctx = React.useContext(context);
     if (ctx === null) throw new Error(noContextError);
     return ctx.controls;
   };
   const useTranslation = () => {
-    const ctx = React.useContext(IntlContext);
+    const ctx = React.useContext(context);
     if (ctx === null) throw new Error(noContextError);
     return ctx.intl.formatMessage as FM;
   };
