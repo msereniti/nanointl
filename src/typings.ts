@@ -160,7 +160,7 @@ declare global {
     plural: PluralParser<Template>;
     selectordinal: SelectordinalParser<Template>;
   }
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  // @ts-ignore
   interface NanointlOverallParsers<Template extends string, Values extends { [key: string]: any } = {}> {}
 }
 
@@ -190,9 +190,9 @@ type RunOverallParsers<
 type BracketsExpressionsOfTemplate<Template extends string> = TopLevelBracketsGroup<Template> extends string
   ? Template extends `${string}${TopLevelBracketsGroup<Template>}${infer After}`
     ? RunBracketsParsers<Template>['vars']['length'] extends 0
-      ? { vars: [...SimpleVarsParser<Template>['vars'], ...BracketsExpressionsOfTemplate<After>['vars']] }
-      : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+      ? // @ts-ignore
+        { vars: [...SimpleVarsParser<Template>['vars'], ...BracketsExpressionsOfTemplate<After>['vars']] }
+      : // @ts-ignore
         { vars: [...RunBracketsParsers<Template>['vars'], ...BracketsExpressionsOfTemplate<After>['vars']] }
     : { vars: [] }
   : { vars: [] };
@@ -213,12 +213,15 @@ type VariablesArrToMap<VariablesArr extends { name: string; type: any }[]> = Var
         : never;
     };
 
+// @ts-ignore
 type ICUVariablesArrayFromTemplate<Template extends string, Values extends { [key: string]: any } = {}> = [
   ...BracketsExpressionsOfTemplate<Template>['vars'],
   ...RunOverallParsers<Template, Values>['vars'],
 ];
 
+// @ts-ignore
 export type ICUVariablesMapFromTemplate<Template extends string, Values extends { [key: string]: any } = {}> = VariablesArrToMap<
+  // @ts-ignore
   ICUVariablesArrayFromTemplate<Template, Values>
 >;
 

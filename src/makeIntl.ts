@@ -48,14 +48,14 @@ export type IntlInstance<
   clearCache: () => void;
 };
 
-type Cache = { s: Map<any, Cache>; w: WeakMap<any, Cache>; v: string | undefined };
-const getFromCache = <T = unknown>(cache: Cache, path: any[]): T => {
+type Cache<V> = { s: Map<any, Cache<V>>; w: WeakMap<any, Cache<V>>; v: V | undefined };
+const getFromCache = <T = unknown>(cache: Cache<T>, path: any[]): T => {
   if (!cache) return cache;
   if (path.length === 0) return cache.v as T;
-  if (typeof path[0] === 'object' && path[0] !== null) return getFromCache(cache?.w.get(path[0]) as Cache, path.slice(1));
-  return getFromCache(cache?.s.get(path[0]) as Cache, path.slice(1));
+  if (typeof path[0] === 'object' && path[0] !== null) return getFromCache(cache?.w.get(path[0]) as Cache<T>, path.slice(1));
+  return getFromCache<T>(cache?.s.get(path[0]) as Cache<T>, path.slice(1));
 };
-const addToCache = <T>(cache: Cache, path: any[], value: T): T => {
+const addToCache = <T>(cache: Cache<T>, path: any[], value: T): T => {
   if (path.length === 0) return (cache.v = value);
   const pathHeadIsObject = typeof path[0] === 'object' && path[0] !== null;
   const nextCacheNode = pathHeadIsObject ? cache.w.get(path[0]) : cache.s.get(path[0]);
@@ -63,7 +63,7 @@ const addToCache = <T>(cache: Cache, path: any[], value: T): T => {
     if (pathHeadIsObject) cache.w.set(path[0], { s: new Map(), w: new WeakMap(), v: undefined });
     else cache.s.set(path[0], { s: new Map(), w: new WeakMap(), v: undefined });
   }
-  return addToCache((pathHeadIsObject ? cache.w.get(path[0]) : cache.s.get(path[0]))!, path.slice(1), value);
+  return addToCache<T>((pathHeadIsObject ? cache.w.get(path[0]) : cache.s.get(path[0]))!, path.slice(1), value);
 };
 
 export const makeIntl = <
@@ -75,7 +75,7 @@ export const makeIntl = <
   options?: MakeIntlOptions,
 ): IntlInstance<Messages, FM> => {
   const astStore: { [messageId: string]: AstNode[] } = {};
-  const cache: Cache = { s: new Map(), w: new WeakMap(), v: undefined };
+  const cache: Cache<string> = { s: new Map(), w: new WeakMap(), v: undefined };
   const externalParsers: ExternalParsers = {};
   const externalSerializers: ExternalSerializers = {};
   const postParsers: PostParser<AstNode[], AstNode[]>[] = [];

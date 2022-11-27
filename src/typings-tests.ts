@@ -51,6 +51,6 @@ assertTypesEqual<
     username: any;
     strong: ({ children }: { children: string }) => unknown;
     emphasis: ({ children }: { children: string }) => unknown;
-    link: ({ children, url }: { children: string; url: string }) => unknown;
+    link: ({ children, url }: { children: string; url: 'https://google.com' }) => unknown;
   }
 >(true);

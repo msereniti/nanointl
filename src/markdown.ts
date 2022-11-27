@@ -1,4 +1,5 @@
 import { NanointlPlugin } from './makeIntl';
+import { AstNode, PostParser } from './parse';
 import {
   Decrement,
   ICUVariablesMapFromTemplate,
@@ -47,7 +48,7 @@ export type MarkdownParsingStore = {
   parentAstChain: MarkdownAstNode[][];
   parentsChain: MarkdownNode[];
   nesting: MarkdownNode['variableName'][];
-  ast: MarkdownAstNode[];
+  ast: (MarkdownAstNode | AstNode)[];
   escaping: boolean;
 };
 
@@ -143,7 +144,7 @@ export const markdownChunkParser = (message: string, externalStore?: MarkdownPar
           currentAstPart = { type: 'external', name: 'md-token', variableName: token, data: { children: [] } } as MarkdownNode;
           pushCurrentPartToAst();
           store.parentsChain.push(currentAstPart);
-          store.parentAstChain.push(store.ast);
+          store.parentAstChain.push(store.ast as MarkdownAstNode[]);
           store.ast = currentAstPart.data.children as MarkdownAstNode[];
           currentAstPart = null;
         }
@@ -155,7 +156,7 @@ export const markdownChunkParser = (message: string, externalStore?: MarkdownPar
       currentAstPart = { type: 'external', name: 'md-token', variableName: 'link', data: { url: '', children: [] } };
       pushCurrentPartToAst();
       store.parentsChain.push(currentAstPart);
-      store.parentAstChain.push(store.ast);
+      store.parentAstChain.push(store.ast as MarkdownAstNode[]);
       store.ast = currentAstPart.data.children as MarkdownAstNode[];
       currentAstPart = null;
       continue;
@@ -191,28 +192,30 @@ export const markdownChunkParser = (message: string, externalStore?: MarkdownPar
   if (!externalStore) return store.parentAstChain[0] ?? store.ast;
 };
 
-export const postParse = (icuAst: AstNode[]) => {
+export const postParse = (icuAst: (AstNode | MarkdownAstNode)[]) => {
   const store = makeMarkdownParsingExternalStore();
 
   for (const node of icuAst) {
     if (typeof node === 'string') markdownChunkParser(node, store);
-    else if (node.data?.children) {
+    else if ('data' in node && node.data?.children) {
       store.ast.push({ ...node, data: { ...node.data, children: postParse(node.data.children) } });
     } else if (node.type === 'select') {
-      const options = {};
+      const options: typeof node.options = {};
       for (const option in node.options) {
-        options[option] = postParse(node.options[option]);
+        options[option] = postParse(node.options[option]) as AstNode[];
       }
       store.ast.push({ ...node, options });
     } else if (node.type === 'plural') {
-      const options = { exacts: {} };
+      const options: typeof node.options = { exacts: {} };
       for (const option in node.options) {
         if (option === 'exacts') {
           for (const exact in node.options.exacts) {
-            options.exacts[exact] = postParse(node.options.exacts[exact]);
+            options.exacts![exact] = postParse(node.options.exacts[exact]) as AstNode[];
           }
         } else {
-          options[option] = postParse(node.options[option]);
+          options[option as Exclude<keyof typeof node.options, 'exacts'>] = postParse(
+            node.options[option as keyof typeof node.options] as AstNode[],
+          ) as AstNode[];
         }
       }
       store.ast.push({ ...node, options });
@@ -228,9 +231,9 @@ export const markdownPlugin: NanointlPlugin<any> = {
   name: 'markdown-plugin',
   init(options) {
     options.addSerializer('md-token', ({ children, ...otherProps }, value, _intl, serializeNested) =>
-      value({ children: serializeNested(children), ...otherProps }),
+      (value as any)?.({ children: serializeNested(children), ...otherProps }),
     );
-    options.addPostParser(postParse);
+    options.addPostParser(postParse as PostParser<AstNode[], AstNode[]>);
   },
 };
 
@@ -269,7 +272,7 @@ type ChildrenSerializationResults<
   Values extends {} = {},
 > = keyof ICUVariablesMapFromTemplate<Template> extends keyof Values
   ? SerializationResult<Pick<Values, keyof ICUVariablesMapFromTemplate<Template>>>
-  : string;
+  : any;
 
 type TokenParser<
   TokenName extends string,
@@ -313,7 +316,7 @@ type LinkTokenParser<
       vars: [
         {
           name: 'link';
-          children: (props: { url: Url; children: ChildrenSerializationResults<Content, Values> }) => any;
+          type: (props: { url: Url; children: ChildrenSerializationResults<Content, Values> }) => any;
         },
         ...LinkTokenParser<After, Values>['vars'],
       ];
@@ -330,7 +333,6 @@ type MarkdownParser<Template extends string, Values extends {} = {}> = {
 };
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   interface NanointlOverallParsers<Template extends string, Values extends {} = {}> {
     markdown: MarkdownParser<Template, Values>;

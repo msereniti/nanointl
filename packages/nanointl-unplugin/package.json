@@ -24,6 +24,7 @@
     "unplugin": "^0.10.2"
   },
   "devDependencies": {
-    "microbundle": "^0.15.1"
+    "microbundle": "^0.15.1",
+    "webpack": "^5.75.0"
   }
 }

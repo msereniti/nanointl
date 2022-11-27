@@ -4,8 +4,8 @@ import { tagsPlugin } from './tags';
 import { markdownPlugin } from './markdown';
 import { ICUVariablesMapFromTemplate } from './typings';
 
-const formatEnMessage = <Message extends string>(message: Message, values: ICUVariablesMapFromTemplate<Message> | null): string =>
-  makeIntl('en', { message }).formatMessage('message', values as any);
+const formatEnMessage = <Message extends string>(message: Message, values: ICUVariablesMapFromTemplate<Message> | null) =>
+  makeIntl('en', { message }).formatMessage('message', values as any) as string;
 
 describe('pure intl', () => {
   test('Message without interpolations', () => {
@@ -94,6 +94,7 @@ describe('plugins integrations', () => {
     ).toEqual(['Hello, ', { is: 'some-object-entity', children: `Sereniti` }, '!']);
   });
 
+  type ProducedNode = { is: string; children: string | ProducedNode[] };
   test('tags + markdown plugins', () => {
     const message = 'Hello, <code>**{username}**</code>!' as const;
     const intl = makeIntl('en', { message }, { plugins: [tagsPlugin, markdownPlugin] });
@@ -101,8 +102,8 @@ describe('plugins integrations', () => {
     expect(
       intl.formatMessage('message', {
         username: 'Sereniti',
-        code: ({ children }) => ({ is: 'tags-produced-node', children }),
-        strong: ({ children }) => ({ is: 'md-produced-node', children }),
+        strong: ({ children }): ProducedNode => ({ is: 'md-produced-node', children }),
+        code: ({ children }: { children: (ProducedNode | string)[] }) => ({ is: 'tags-produced-node', children }),
       }),
     ).toEqual(['Hello, ', { is: 'tags-produced-node', children: [{ is: 'md-produced-node', children: `Sereniti` }] }, '!']);
   });
@@ -114,8 +115,8 @@ describe('plugins integrations', () => {
     expect(
       intl.formatMessage('message', {
         username: 'Sereniti',
-        code: ({ children }) => ({ is: 'tags-produced-node', children }),
-        strong: ({ children }) => ({ is: 'md-produced-node', children }),
+        code: ({ children }): ProducedNode => ({ is: 'tags-produced-node', children }),
+        strong: ({ children }: { children: (ProducedNode | string)[] }) => ({ is: 'md-produced-node', children }),
       }),
     ).toEqual(['Hello, ', { is: 'md-produced-node', children: [{ is: 'tags-produced-node', children: `Sereniti` }] }, '!']);
   });

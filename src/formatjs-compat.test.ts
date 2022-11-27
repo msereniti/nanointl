@@ -5,7 +5,7 @@ import { sep as pathSep } from 'path';
 import { parseIcu, ParseIcuOptions } from './parse';
 import { serializeIcu } from './serialize';
 import { makeIntlBase } from './intlBase';
-import { makeTagsParsingExternalStore, tagsChunkParser, TagsAstNode, tagsPostSerializer, tagsPostParser } from './tags';
+import { tagsPostSerializer, tagsPostParser } from './tags';
 import fetch from 'node-fetch';
 import { parseNumber, serializeNumber } from './number';
 import { parseDateTime, serializeDate, serializeTime } from './datetime';
@@ -43,7 +43,6 @@ describe('Full compatibility with formatjs core api', async () => {
     date.getDate().toString().padStart(2, '0') +
     '.ts';
   const cacheFilePath = `${cacheDir}/${cacheFileName}`;
-  console.log(cacheFilePath);
   let testText = '';
   if (await pathExists(cacheFilePath)) {
     testText = await fs.readFile(cacheFilePath, 'utf-8');
@@ -63,7 +62,7 @@ describe('Full compatibility with formatjs core api', async () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { describe, test, expect, it } = vitestUtils;
     const makeCompatOptions = (message: string, formatjsOptions: any) => {
-      const verboseParsing = {};
+      const verboseParsing: { [paramName: string]: any } = {};
       const tagsHandler = {};
       const parsingOptions: ParseIcuOptions = {
         externalParsers,
@@ -89,14 +88,14 @@ describe('Full compatibility with formatjs core api', async () => {
         postParsers: [tagsPostParser],
       };
     };
-    const formatToParts = (message: string, options: {}, values: {}, locale: string) => {
+    const formatToParts = (message: string, options: {}, values: any, locale: string) => {
       const ast = Array.isArray(message) ? message : parseIcu(message, options);
-      const compatValues = {
-        tagsFallback: ({ children, tag }) => (children.length === 0 ? `<${tag}/>` : [`<${tag}>`, ...children, `</${tag}>`]),
+      const compatValues: any = {
+        tagsFallback: ({ children, tag }: any) => (children.length === 0 ? `<${tag}/>` : [`<${tag}>`, ...children, `</${tag}>`]),
       };
       for (const name in values) {
         if (typeof values[name] === 'function') {
-          compatValues[name] = ({ children }) => values[name](Array.isArray(children) ? children : [children]);
+          compatValues[name] = ({ children }: any) => values[name](Array.isArray(children) ? children : [children]);
         } else {
           compatValues[name] = values[name];
         }
@@ -105,78 +104,12 @@ describe('Full compatibility with formatjs core api', async () => {
       const result = serializeIcu(ast, compatValues, makeIntlBase(locale), {
         ...options,
         externalParsers,
-      });
+      } as any);
 
       return (Array.isArray(result) ? result : [result]).map((part) => {
         if (typeof part !== 'object' || part === null) return { type: 'literal', value: part };
         else return { type: 'object', value: part };
       });
-      // const parts = serializeIcu(ast, values, makeIntlBase(locale), {
-      //   ...options,
-      //   externalParsers,
-      //   reducer: {
-      //     getInit: () => [],
-      //     reduce: (acc, item, nodeType) => {
-      //       if (nodeType === 'variable') {
-      //         acc.push({ interpolationSymbol, value: item });
-      //         return acc;
-      //       }
-      //       const items = Array.isArray(item) ? item.flat() : [item];
-      //       for (const item of items) {
-      //         if (
-      //           acc.length > 0 &&
-      //           (typeof acc[acc.length - 1] !== 'object' || acc[acc.length - 1] === null) &&
-      //           (typeof item !== 'object' || item === null)
-      //         ) {
-      //           acc[acc.length - 1] += String(item);
-      //         } else {
-      //           acc.push(item);
-      //         }
-      //       }
-      //       return acc;
-      //     },
-      //   },
-      // });
-      // const handleParsedTagParts = (parts: TagsAstNode[]) =>
-      //   parts
-      //     .map((part) => {
-      //       if (typeof part === 'string') return part;
-      //       if (part.interpolationSymbol === interpolationSymbol) return part.value;
-      //       if (part.tag) {
-      //         if (typeof values[part.tag] !== 'function') {
-      //           if (part.children.length > 0) {
-      //             return `<${part.tag}>${handleParsedTagParts(part.children)}</${part.tag}>`;
-      //           } else {
-      //             return `<${part.tag}/>`;
-      //           }
-      //         }
-      //         return values[part.tag](handleParsedTagParts(part.children));
-      //       }
-      //       return part;
-      //     })
-      //     .reduce((acc, item) => {
-      //       if (typeof item === 'string' && typeof acc[acc.length - 1] === 'string') acc[acc.length - 1] += item;
-      //       else if (Array.isArray(item)) acc.push(...item);
-      //       else acc.push(item);
-      //       return acc;
-      //     }, []);
-      // const tagsParsingStore = makeTagsParsingExternalStore();
-      // for (const part of parts) {
-      //   if (typeof part === 'string') tagsChunkParser(part, tagsParsingStore);
-      //   else tagsParsingStore.ast.push(part);
-      // }
-      // const tagsParts = handleParsedTagParts(tagsParsingStore.ast);
-      // return tagsParts
-      //   .reduce((acc, item) => {
-      //     if (typeof item === 'string' && typeof acc[acc.length - 1] === 'string') acc[acc.length - 1] += item;
-      //     else if (Array.isArray(item)) acc.push(...item);
-      //     else acc.push(item);
-      //     return acc;
-      //   }, [])
-      //   .map((part) => {
-      //     if (typeof part !== 'object' || part === null) return { type: 'literal', value: part };
-      //     else return { type: 'object', value: part };
-      //   });
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -195,38 +128,6 @@ describe('Full compatibility with formatjs core api', async () => {
         this.format = (values: any) => {
           try {
             const options = makeCompatOptions(message, formatjsOptions);
-            // const handleParsedTagParts = (parts: TagsAstNode[]) =>
-            //   parts
-            //     .map((part) => {
-            //       if (typeof part === 'string') return part;
-            //       if (part.tag) {
-            //         if (typeof values[part.tag] !== 'function') {
-            //           if (part.children.length > 0) {
-            //             return `<${part.tag}>${handleParsedTagParts(part.children)}</${part.tag}>`;
-            //           } else {
-            //             return `<${part.tag}/>`;
-            //           }
-            //         }
-            //         return values[part.tag](handleParsedTagParts(part.children));
-            //       }
-            //       return part;
-            //     })
-            //     .reduce((acc, item) => {
-            //       if (typeof item !== 'object' && acc.length > 0 && typeof acc[acc.length - 1] !== 'object')
-            //         acc[acc.length - 1] += item;
-            //       else if (Array.isArray(item)) acc.push(...item);
-            //       else acc.push(item);
-            //       return acc;
-            //     }, []);
-
-            // const wrappedValues = {};
-            // for (const key in values) {
-            //   if (typeof values[key] === 'string') {
-            //     wrappedValues[key] = `${values[key]}`; //.replace(/</g, '[').replace(/>/g, ']');
-            //   } else {
-            //     wrappedValues[key] = values[key];
-            //   }
-            // }
             const parts = formatToParts(message, options, values, locale)
               .map((part) => part.value)
               .reduce((acc, item) => {
@@ -236,17 +137,6 @@ describe('Full compatibility with formatjs core api', async () => {
                 else acc.push(item);
                 return acc;
               }, []);
-
-            // const tagsParsedParts = parseTags(message);
-
-            // const parts = handleParsedTagParts(tagsParsedParts)
-            //   .flat()
-            //   .reduce((acc, item) => {
-            //     if (typeof item === 'string' && typeof acc[acc.length - 1] === 'string') acc[acc.length - 1] += item;
-            //     else if (Array.isArray(item)) acc.push(...item);
-            //     else acc.push(item);
-            //     return acc;
-            //   }, []);
             if (parts.length === 0) return '';
             if (parts.length === 1) return parts[0];
             return parts;
@@ -268,7 +158,7 @@ describe('Full compatibility with formatjs core api', async () => {
         this.formatToParts = (values: any) => {
           const options = makeCompatOptions(message, formatjsOptions);
 
-          return formatToParts(message, options, values, locale);
+          return formatToParts(message, options, values, locale) as any;
         };
       }
       resolvedOptions: () => { locale: string };

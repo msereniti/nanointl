@@ -1,5 +1,6 @@
 import { NanointlPlugin } from './makeIntl';
-import { AstNode } from './parse';
+import { AstNode, PostParser } from './parse';
+import { ExternalSerializer } from './serialize';
 import {
   UnwrapLinkedSleeve,
   LinkedSleeveNexusLimit,
@@ -18,7 +19,7 @@ type TagNode = {
 export type TagsAstNode = string | TagNode;
 export type TagsParsingStore = {
   parentAstChain: TagsAstNode[][];
-  ast: TagsAstNode[];
+  ast: (TagsAstNode | AstNode)[];
   tagsChain: TagNode[];
   escaping: boolean;
 };
@@ -84,7 +85,7 @@ export const tagsChunkParser = (message: string, externalStore?: TagsParsingStor
           pushCurrentPartToAst();
           if (!closingTag) {
             store.tagsChain.push(currentAstPart);
-            store.parentAstChain.push(store.ast);
+            store.parentAstChain.push(store.ast as TagsAstNode[]);
             store.ast = currentAstPart.data.children;
           } else {
             const prevChar = message[i - 1];
@@ -112,28 +113,28 @@ export const tagsChunkParser = (message: string, externalStore?: TagsParsingStor
   if (!externalStore) return store.parentAstChain[0] ?? store.ast;
 };
 
-// type ModifiedAstNode = {};
-
-export const tagsPostParser = (icuAst: AstNode[]) => {
+export const tagsPostParser: PostParser<AstNode[], AstNode[]> = (icuAst: AstNode[]) => {
   const store = makeTagsParsingExternalStore();
 
   for (const node of icuAst) {
     if (typeof node === 'string') tagsChunkParser(node, store);
     else if (node.type === 'select') {
-      const options = {};
+      const options: typeof node.options = {};
       for (const option in node.options) {
-        options[option] = tagsPostParser(node.options[option]);
+        options[option as keyof typeof options] = tagsPostParser(node.options[option]) as AstNode[];
       }
       store.ast.push({ ...node, options });
     } else if (node.type === 'plural') {
-      const options = { exacts: {} };
+      const options: typeof node.options = { exacts: {} };
       for (const option in node.options) {
         if (option === 'exacts') {
           for (const exact in node.options.exacts) {
-            options.exacts[exact] = tagsPostParser(node.options.exacts[exact]);
+            options.exacts![exact] = tagsPostParser(node.options.exacts[exact]) as AstNode[];
           }
         } else {
-          options[option] = tagsPostParser(node.options[option]);
+          options[option as Exclude<keyof typeof options, 'exacts'>] = tagsPostParser(
+            node.options[option as keyof typeof options] as AstNode[],
+          ) as AstNode[];
         }
       }
       store.ast.push({ ...node, options });
@@ -142,22 +143,31 @@ export const tagsPostParser = (icuAst: AstNode[]) => {
     }
   }
 
-  return store.ast;
+  return store.ast as AstNode[];
 };
 
-export const tagsPostSerializer = ({ children }, value, _intl, serializeNested, node, values) => {
+export const tagsPostSerializer: ExternalSerializer<{ children: AstNode[] }> = (
+  params,
+  value,
+  _intl,
+  serializeNested,
+  node,
+  values,
+) => {
+  const variableName = (node as { variableName: string })?.variableName;
+  const renderChildren = value as (params: { children: unknown; tag: string }) => string;
   if (!value) {
     if (values.tagsFallback) value = values.tagsFallback;
-    else throw new Error(`Serializer for "${node.variableName}" was not provided`);
+    else throw new Error(`Serializer for "${variableName}" was not provided`);
   }
-  return value({ children: serializeNested(children), tag: node.variableName });
+  return renderChildren?.({ children: serializeNested(params?.children ?? []), tag: variableName });
 };
 
 export const tagsPlugin: NanointlPlugin<any> = {
   name: 'tags-plugin',
   init(options) {
     options.addSerializer('tag', tagsPostSerializer);
-    options.addPostParser(tagsPostParser);
+    options.addPostParser(tagsPostParser as PostParser<AstNode[], AstNode[]>);
   },
 };
 
@@ -200,7 +210,7 @@ type ChildrenSerializationResults<
   Values extends {} = {},
 > = keyof ICUVariablesMapFromTemplate<Template> extends keyof Values
   ? SerializationResult<Pick<Values, keyof ICUVariablesMapFromTemplate<Template>>>
-  : string;
+  : any;
 
 type TagsParser<Template extends string, Values extends {} = {}> = Template extends `${string}<${infer TagInner}>${infer After}`
   ? TagInner extends `/${string}`
@@ -238,7 +248,6 @@ type TagsParser<Template extends string, Values extends {} = {}> = Template exte
   : { vars: [] };
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   interface NanointlOverallParsers<Template extends string, Values extends {} = {}> {
     tags: TagsParser<Template, Values>;

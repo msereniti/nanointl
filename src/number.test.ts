@@ -3,8 +3,8 @@ import { makeIntl } from '../src/makeIntl';
 import { ICUVariablesMapFromTemplate } from '../src/typings';
 import { numberPlugin } from './number';
 
-const formatEnMessage = <Message extends string>(message: Message, values: ICUVariablesMapFromTemplate<Message> | null): string =>
-  makeIntl('en', { message }, { plugins: [numberPlugin] }).formatMessage('message', values as any);
+const formatEnMessage = <Message extends string>(message: Message, values: ICUVariablesMapFromTemplate<Message> | null) =>
+  makeIntl('en', { message }, { plugins: [numberPlugin] }).formatMessage('message', values as any) as string;
 
 describe('Numbers parser', () => {
   test('Percents', () => {

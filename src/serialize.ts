@@ -6,6 +6,8 @@ export type ExternalSerializer<Params = unknown> = (
   variableValue: unknown,
   intl: IntlBase,
   serializeNested: (ast: AstNode[]) => unknown,
+  node: AstNode,
+  values: Record<string, string | number | boolean | undefined | unknown>,
 ) => string;
 export type ExternalSerializers<Params = unknown> = {
   [serializerName: string]: ExternalSerializer<Params>;
@@ -40,7 +42,7 @@ const defaultReducer: Reducer<string | (string | unknown)[]> = {
 
 export type SerializeIcuOptions = {
   externalSerializers?: ExternalSerializers;
-  reducer?: Reducer<T>;
+  reducer?: Reducer<any>;
   original?: string;
 };
 
