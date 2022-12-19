@@ -1,0 +1,61 @@
+{
+  "name": "nanointl",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "lint": "eslint src",
+    "ts": "tsc --noEmit",
+    "build": "bash ./build.sh"
+  },
+  "source": "src/index.ts",
+  "main": "dist/index.js",
+  "umd:main": "dist/index.umd.js",
+  "cjs:main": "dist/index.cjs.js",
+  "module": "dist/index.mjs",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    },
+    "./number": {
+      "types": "./number.d.ts",
+      "require": "./dist/number.js",
+      "default": "./dist/number.mjs"
+    },
+    "./datetime": {
+      "types": "./datetime.d.ts",
+      "require": "./dist/datetime.js",
+      "default": "./dist/datetime.mjs"
+    },
+    "./tags": {
+      "types": "./tags.d.ts",
+      "require": "./dist/tags.js",
+      "default": "./dist/tags.mjs"
+    },
+    "./markdown": {
+      "types": "./markdown.d.ts",
+      "require": "./dist/markdown.js",
+      "default": "./dist/markdown.mjs"
+    },
+    "./parse": {
+      "types": "./parse.d.ts",
+      "require": "./dist/parse.js",
+      "default": "./dist/parse.mjs"
+    },
+    "./serialize": {
+      "types": "./serialize.d.ts",
+      "require": "./dist/serialize.js",
+      "default": "./dist/serialize.mjs"
+    }
+  },
+  "keywords": [],
+  "author": "Michael Sereniti",
+  "license": "ISC",
+  "devDependencies": {
+    "microbundle": "^0.15.1"
+  }
+}

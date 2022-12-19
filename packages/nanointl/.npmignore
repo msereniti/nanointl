@@ -1,0 +1,5 @@
+src
+node_modules
+build.sh
+tsconfig.json
+tsconfig.build.json

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { makeIntl } from '../src/makeIntl';
-import { ICUVariablesMapFromTemplate } from '../src/typings';
+import { makeIntl } from './makeIntl';
+import { ICUVariablesMapFromTemplate } from './typings';
 import { numberPlugin } from './number';
 
 const formatEnMessage = <Message extends string>(message: Message, values: ICUVariablesMapFromTemplate<Message> | null) =>

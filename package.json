@@ -1,12 +1,9 @@
 {
-  "name": "nanointl",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "vitest",
-    "lint": "eslint src",
-    "ts": "tsc --noEmit"
+    "build": "pnpm --filter nanointl --filter @nanointl/* --filter typescript-json-as-const-plugin run build",
+    "lint:es": "eslint packages && eslint examples",
+    "lint:ts": "tsc --noEmit"
   },
   "keywords": [],
   "author": "Michael Sereniti",
@@ -23,6 +20,7 @@
     "fast-glob": "^3.2.12",
     "fs-extra": "^10.1.0",
     "husky": "^8.0.1",
+    "microbundle": "^0.15.1",
     "node-fetch": "^3.2.10",
     "pnpm": "^7.9.5",
     "prettier": "^2.7.1",

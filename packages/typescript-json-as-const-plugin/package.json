@@ -1,5 +1,7 @@
 {
   "name": "typescript-json-as-const-plugin",
+  "version": "0.0.1",
+  "author": "Michael Sereniti",
   "source": "src/typescript-json-as-const-plugin.ts",
   "main": "dist/typescript-json-as-const-plugin.js",
   "umd:main": "dist/typescript-json-as-const-plugin.umd.js",
@@ -11,7 +13,7 @@
   },
   "types": "dist/typescript-json-as-const-plugin.d.ts",
   "scripts": {
-    "build": "microbundle"
+    "build": "microbundle --target node"
   },
   "devDependencies": {
     "microbundle": "^0.15.1"

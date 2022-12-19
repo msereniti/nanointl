@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@nanointl/unplugin": "workspace:*",
+    "@nanointl/unplugin": "0.0.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "nanointl": "0.0.1",
+    "@nanointl/react": "0.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.0.17",

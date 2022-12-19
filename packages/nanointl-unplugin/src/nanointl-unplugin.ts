@@ -7,7 +7,7 @@ type UserOptions = {
   localesDir: string;
 };
 
-export const unplugin: UnpluginInstance<UserOptions, false> = createUnplugin((options: UserOptions) => {
+export const nanointlUnplugin: UnpluginInstance<UserOptions, false> = createUnplugin((options: UserOptions) => {
   if (!options.localesDir) {
     throw new Error(`[@nanointl/unplugin] "localesDir" is a required option`);
   }

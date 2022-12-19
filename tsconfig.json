@@ -19,7 +19,7 @@
     "baseUrl": "./",
     "plugins": [{ "name": "typescript-json-as-const-plugin" }]
   },
-  "include": ["src", "packages"],
+  "include": ["packages"],
   "references": [
     {
       "path": "./tsconfig.node.json"

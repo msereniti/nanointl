@@ -155,11 +155,11 @@ export const tagsPostSerializer: ExternalSerializer<{ children: AstNode[] }> = (
   values,
 ) => {
   const variableName = (node as { variableName: string })?.variableName;
-  const renderChildren = value as (params: { children: unknown; tag: string }) => string;
   if (!value) {
     if (values.tagsFallback) value = values.tagsFallback;
     else throw new Error(`Serializer for "${variableName}" was not provided`);
   }
+  const renderChildren = value as (params: { children: unknown; tag: string }) => string;
   return renderChildren?.({ children: serializeNested(params?.children ?? []), tag: variableName });
 };
 

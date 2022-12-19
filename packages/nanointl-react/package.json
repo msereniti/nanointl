@@ -1,12 +1,24 @@
 {
   "name": "@nanointl/react",
+  "version": "0.0.1",
   "author": "Michael Sereniti",
+  "type": "module",
+  "source": "src/nanointl-react.tsx",
+  "main": "dist/index.js",
+  "umd:main": "dist/index.umd.js",
+  "cjs:main": "dist/index.cjs.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "devDependencies": {
     "@types/react": "18.0.20",
     "microbundle": "^0.15.1",
     "react": "16.8.6"
   },
   "peerDependencies": {
-    "react": "^16.8"
+    "react": "^16.8",
+    "nanointl": "^0.0.1"
+  },
+  "scripts": {
+    "build": "rm -rf dist && microbundle"
   }
 }

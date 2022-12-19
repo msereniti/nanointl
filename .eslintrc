@@ -4,6 +4,7 @@
   "parser": "@typescript-eslint/parser",
   "parserOptions": { "project": ["./tsconfig.json", "./tsconfig.node.json"] },
   "plugins": ["@typescript-eslint", "prettier"],
+  "ignorePatterns": ["dist"],
   "rules": {
     "@typescript-eslint/interface-name-prefix": "off",
     "@typescript-eslint/explicit-function-return-type": "off",

@@ -3,7 +3,9 @@ import { AstNode, ExternalParser, ExternalParsers, parseIcu, ParseIcuOptions, Po
 import { ExternalSerializer, ExternalSerializers, serializeIcu } from './serialize';
 import { ICUVariablesMapFromTemplate, SerializationResult } from './typings';
 
-type RequiredButUndefinedPossible<T extends {}> = {
+/**
+ * @description Required but undefined possible */
+type RUP<T extends {}> = {
   [K in keyof T]: T[K] | undefined;
 };
 type NeverIfObjectHasNoProperties<T extends {}> = {} extends T ? never : T;
@@ -12,7 +14,7 @@ type EntitiesOfMessage<Message extends string, Values extends { [key: string]: a
   ? { [key: string]: any } & {
       how_to_add_autocomplete_and_strict_types_checking_for_nanointl?: 'http://github.com/phytonmk/nanointl/#strict-typings';
     }
-  : NeverIfObjectHasNoProperties<RequiredButUndefinedPossible<ICUVariablesMapFromTemplate<Message, Values>>>;
+  : NeverIfObjectHasNoProperties<RUP<ICUVariablesMapFromTemplate<Message, Values>>>;
 
 export type FormatMessage<Messages extends { [messageId: string]: string }> = <
   MessageKey extends keyof Messages,

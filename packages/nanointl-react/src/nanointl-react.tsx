@@ -1,5 +1,5 @@
 import React from 'react';
-import { MakeIntlOptions, FormatMessage, makeIntl, IntlInstance } from '../../../src/makeIntl';
+import { MakeIntlOptions, FormatMessage, makeIntl, IntlInstance } from '../../nanointl/src/makeIntl';
 
 type IntlControls<Messages extends { [messageId: string]: string }> = {
   addLocale: (locale: string, messages: Messages) => void;
