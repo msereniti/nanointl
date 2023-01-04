@@ -16,6 +16,10 @@
     "build": "microbundle --target node"
   },
   "devDependencies": {
+    "@types/minimatch": "^5.1.2",
     "microbundle": "^0.15.1"
+  },
+  "dependencies": {
+    "minimatch": "^5.1.1"
   }
 }

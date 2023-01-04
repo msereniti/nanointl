@@ -1,21 +1,19 @@
-import fs from 'fs/promises';
-import { dirname as resolveDirname } from 'path';
+import fs from 'fs';
 import type tss from 'typescript/lib/tsserverlibrary';
+import minimatch from 'minimatch';
 
 const scriptTargetLatest = 99;
 const scriptKindExternal = 5;
 
-const makeJsonDTs = async (ts: typeof tss, fileName: string) => {
-  const text = await fs.readFile(fileName, 'utf-8');
+const makeJsonDTs = (ts: typeof tss, fileName: string) => {
+  const text = fs.readFileSync(fileName, 'utf-8');
 
-  const dtsText = `const JSON: ${text.trim()} as const;
+  const dtsText = `const JSON: ${text} as const;
 export default JSON;
 `;
 
   return ts.ScriptSnapshot.fromString(dtsText);
 };
-
-const isJson = (path: string) => path.endsWith('.json');
 
 const init = (modules: { typescript: typeof tss }) => {
   const ts = modules.typescript;
@@ -23,10 +21,17 @@ const init = (modules: { typescript: typeof tss }) => {
     const directory = info.project.getCurrentDirectory();
     process.chdir(directory);
 
+    const filter = (fileName: string) => {
+      if (!fileName.toLowerCase().endsWith('.json')) return false;
+      if (info.config.include && !info.config.include.some((include: string) => minimatch(fileName, include))) return false;
+      if (info.config.exclude && info.config.exclude.some((exclude: string) => minimatch(fileName, exclude))) return false;
+      return true;
+    };
+
     const _createLanguageServiceSourceFile = ts.createLanguageServiceSourceFile;
-    ts.createLanguageServiceSourceFile = async (fileName, scriptSnapshot, ...rest): Promise<ts.SourceFile> => {
-      if (isJson(fileName)) {
-        scriptSnapshot = await makeJsonDTs(ts, fileName);
+    ts.createLanguageServiceSourceFile = (fileName, scriptSnapshot, ...rest): ts.SourceFile => {
+      if (filter(fileName)) {
+        scriptSnapshot = makeJsonDTs(ts, fileName);
         const [, version, setNodeParents] = rest;
         const sourceFile = _createLanguageServiceSourceFile(
           fileName,
@@ -42,55 +47,27 @@ const init = (modules: { typescript: typeof tss }) => {
         return sourceFile;
       }
 
-      const sourceFile = _createLanguageServiceSourceFile(fileName, scriptSnapshot, ...rest);
-
-      return sourceFile;
+      return _createLanguageServiceSourceFile(fileName, scriptSnapshot, ...rest);
     };
 
-    const updateLanguageServiceSourceFile = ts.updateLanguageServiceSourceFile;
-    ts.updateLanguageServiceSourceFile = async (sourceFile, scriptSnapshot, ...rest): Promise<ts.SourceFile> => {
-      if (isJson(sourceFile.fileName)) {
-        scriptSnapshot = await makeJsonDTs(ts, sourceFile.fileName);
+    const _updateLanguageServiceSourceFile = ts.updateLanguageServiceSourceFile;
+    ts.updateLanguageServiceSourceFile = (sourceFile, scriptSnapshot, ...rest): ts.SourceFile => {
+      if (filter(sourceFile.fileName)) {
+        scriptSnapshot = makeJsonDTs(ts, sourceFile.fileName);
 
-        sourceFile = updateLanguageServiceSourceFile(sourceFile, scriptSnapshot, ...rest);
+        sourceFile = _updateLanguageServiceSourceFile(sourceFile, scriptSnapshot, ...rest);
 
         sourceFile.isDeclarationFile = true;
 
         return sourceFile;
       }
 
-      sourceFile = updateLanguageServiceSourceFile(sourceFile, scriptSnapshot, ...rest);
-
-      return sourceFile;
+      return _updateLanguageServiceSourceFile(sourceFile, scriptSnapshot, ...rest);
     };
-
-    if (info.languageServiceHost.resolveModuleNames) {
-      const resolveModuleNames = info.languageServiceHost.resolveModuleNames.bind(info.languageServiceHost);
-
-      info.languageServiceHost.resolveModuleNames = (moduleNames, containingFile, ...rest) => {
-        const resolvedModules = resolveModuleNames(moduleNames, containingFile, ...rest);
-
-        return moduleNames.map((moduleName, index) => {
-          try {
-            if (isJson(moduleName)) {
-              return {
-                extension: '.d.ts',
-                isExternalLibraryImport: false,
-                resolvedFileName: (resolveDirname(containingFile), moduleName),
-              };
-            }
-          } catch (e) {
-            return resolvedModules[index];
-          }
-          return resolvedModules[index];
-        });
-      };
-    }
-
-    return info.languageService;
   };
 
-  const getExternalFiles = (project: tss.server.ConfiguredProject) => project.getFileNames().filter(isJson);
+  const getExternalFiles = (project: tss.server.ConfiguredProject) =>
+    project.getFileNames().filter((path) => path.toLowerCase().endsWith('.json'));
 
   return { create, getExternalFiles };
 };
