@@ -49,7 +49,6 @@ export type MarkdownParsingStore = {
   parentsChain: MarkdownNode[];
   nesting: MarkdownNode['variableName'][];
   ast: (MarkdownAstNode | AstNode)[];
-  escaping: boolean;
 };
 
 const symbolToInlineToken = {
@@ -67,7 +66,6 @@ export const makeMarkdownParsingExternalStore = (): MarkdownParsingStore => ({
   parentsChain: [],
   nesting: [],
   ast: [],
-  escaping: false,
 });
 
 export const markdownChunkParser = (message: string, externalStore?: MarkdownParsingStore): MarkdownAstNode[] | undefined => {
@@ -90,14 +88,6 @@ export const markdownChunkParser = (message: string, externalStore?: MarkdownPar
     const char = message[i];
     const nextChar = message[i + 1];
 
-    const currentEscaping = store.escaping;
-    if (char === "'") {
-      store.escaping = !store.escaping;
-      if (message[i - 1] !== "'") {
-        continue;
-      }
-    }
-
     if (currentAstPart === null) {
       currentAstPart = '';
     }
@@ -114,10 +104,6 @@ export const markdownChunkParser = (message: string, externalStore?: MarkdownPar
       }
     }
     if (typeof currentAstPart !== 'string') {
-      continue;
-    }
-    if (currentEscaping) {
-      currentAstPart += char;
       continue;
     }
 
@@ -196,8 +182,9 @@ export const postParse = (icuAst: (AstNode | MarkdownAstNode)[]) => {
   const store = makeMarkdownParsingExternalStore();
 
   for (const node of icuAst) {
-    if (typeof node === 'string') markdownChunkParser(node, store);
-    else if ('data' in node && node.data?.children) {
+    if (typeof node === 'string') {
+      markdownChunkParser(node, store);
+    } else if ('data' in node && node.data?.children) {
       store.ast.push({ ...node, data: { ...node.data, children: postParse(node.data.children) } });
     } else if (node.type === 'select') {
       const options: typeof node.options = {};

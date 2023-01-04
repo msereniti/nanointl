@@ -50,6 +50,11 @@
       "types": "./serialize.d.ts",
       "require": "./dist/serialize.js",
       "default": "./dist/serialize.mjs"
+    },
+    "./intlBase": {
+      "types": "./intlBase.d.ts",
+      "require": "./dist/intlBase.js",
+      "default": "./dist/intlBase.mjs"
     }
   },
   "keywords": [],

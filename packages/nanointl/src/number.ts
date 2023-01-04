@@ -11,7 +11,7 @@ export type NumberSerializationParams = {
   verbose?: boolean;
 };
 
-export const parseNumber: ExternalParser<NumberSerializationParams> = (template, _variableName, verboseInput) => {
+export const parseNumber: ExternalParser<NumberSerializationParams> = (template, variableName, verboseInput) => {
   if (template.trim() === 'verbose') return { native: verboseInput, scale: 1, offset: 0, verbose: true };
   if (template.trim() === 'integer')
     return { native: { minimumFractionDigits: 0, maximumFractionDigits: 0 }, scale: 1, offset: 0 };
@@ -25,36 +25,30 @@ export const parseNumber: ExternalParser<NumberSerializationParams> = (template,
       params.native.unit = 'percent';
       params.native.maximumFractionDigits = params.native.maximumFractionDigits ?? 0;
       params.scale *= 100;
-    }
-    if (token.startsWith('.')) {
+      if (token.startsWith('%x')) params.scale *= parseFloat(token.substring('%x'.length));
+    } else if (token.startsWith('.')) {
       const startChar = token[1];
       for (let i = 1; i < token.length; i++) {
         const char = token[i];
         if (char === '0') {
           params.native.minimumFractionDigits = i;
-          if (startChar === '0') params.native.maximumFractionDigits = i;
-        }
-        if (char === '#') {
-          params.native.maximumFractionDigits = i;
-        }
-        if (char === '*') {
-          params.native.maximumFractionDigits = undefined;
-        }
-        if (char === '/') {
-          const subToken = token.substring(i);
-          for (let i = 1; i < subToken.length; i++) {
-            const char = subToken[i];
-            if (char === '@') params.native.minimumSignificantDigits = i;
-            if (char === '#') params.native.maximumSignificantDigits = i;
-            if (char === '*') params.native.maximumSignificantDigits = undefined;
-            if (char === 'r') (params.native as any).roundingPriority = 'morePrecision';
-            if (char === 's') (params.native as any).roundingPriority = 'lessPrecision';
-          }
-          break;
-        }
+          if (startChar === char) params.native.maximumFractionDigits = i;
+        } else if (char === '#') params.native.maximumFractionDigits = i;
+        else if (char === '*') params.native.maximumFractionDigits = 20;
+        else throw new Error(`Unexpected symbol "${char}" in "${template}" template of "${variableName}" interpolation`);
       }
-    }
-    if (token.startsWith('integer-width')) {
+    } else if (token.startsWith('/')) {
+      const startChar = token[1];
+      for (let i = 1; i < token.length; i++) {
+        const char = token[i];
+        if (char === '@') {
+          params.native.minimumSignificantDigits = i;
+          if (startChar === char) params.native.maximumSignificantDigits = i;
+        } else if (char === '#') params.native.maximumSignificantDigits = i;
+        else if (char === '*') params.native.maximumSignificantDigits = 20;
+        else throw new Error(`Unexpected symbol "${char}" in "${template}" template of "${variableName}" interpolation`);
+      }
+    } else if (token.startsWith('integer-width')) {
       params.native.minimumFractionDigits = 0;
       params.native.maximumFractionDigits = 0;
       if (token.startsWith('integer-width/')) {
@@ -71,9 +65,7 @@ export const parseNumber: ExternalParser<NumberSerializationParams> = (template,
           }
         }
       }
-    }
-
-    if (token.startsWith('E') || token.startsWith('engineering') || token.startsWith('scientific')) {
+    } else if (token.startsWith('E') || token.startsWith('engineering') || token.startsWith('scientific')) {
       if (token.startsWith('EE') || token.startsWith('engineering')) {
         params.native.notation = 'engineering';
       } else {
@@ -94,64 +86,52 @@ export const parseNumber: ExternalParser<NumberSerializationParams> = (template,
           if (part.startsWith('*')) params.native.minimumIntegerDigits = part.length - 1;
         }
       }
-    }
-
-    if (token.startsWith('scale/')) params.scale *= parseFloat(token.substring('scale/'.length));
-    if (token.startsWith('%x')) params.scale *= parseFloat(token.substring('%x'.length));
-
-    if (token.startsWith('measure-unit/')) {
+    } else if (token.startsWith('scale/')) params.scale *= parseFloat(token.substring('scale/'.length));
+    else if (token.startsWith('measure-unit/')) {
       params.native.style = 'unit';
       params.native.unit = token.substring('measure-unit/'.length);
-    }
-    if (token.startsWith('unit/')) {
+    } else if (token.startsWith('unit/')) {
       params.native.style = 'unit';
       params.native.unit = token.substring('unit/'.length);
-    }
-    if (token.startsWith('currency/')) {
+    } else if (token.startsWith('currency/')) {
       params.native.style = 'currency';
       params.native.currency = token.substring('currency/'.length);
-    }
-
-    if (token === 'notation-scientific') params.native.notation = 'scientific';
-    if (token === 'notation-engineering') params.native.notation = 'engineering';
-    if (token === 'notation-simple') params.native.notation = 'standard';
-    if (token === 'unit-width-iso-code') params.native.currencyDisplay = 'symbol';
-    if (token === 'unit-width-short') {
+    } else if (token === 'notation-scientific') params.native.notation = 'scientific';
+    else if (token === 'notation-engineering') params.native.notation = 'engineering';
+    else if (token === 'notation-simple') params.native.notation = 'standard';
+    else if (token === 'unit-width-iso-code') params.native.currencyDisplay = 'symbol';
+    else if (token === 'unit-width-short') {
       params.native.unitDisplay = 'short';
       params.native.currencyDisplay = 'code';
-    }
-    if (token === 'unit-width-full-name') {
+    } else if (token === 'unit-width-full-name') {
       params.native.unitDisplay = 'long';
       params.native.currencyDisplay = 'name';
-    }
-    if (token === 'unit-width-narrow') {
+    } else if (token === 'unit-width-narrow') {
       params.native.unitDisplay = 'narrow';
       params.native.currencyDisplay = 'narrowSymbol';
-    }
-
-    if (token === 'compact-short' || token === 'K') {
+    } else if (token === 'compact-short' || token === 'K') {
       params.native.notation = 'compact';
       params.native.compactDisplay = 'short';
-    }
-    if (token === 'compact-long' || token === 'KK') {
+    } else if (token === 'compact-long' || token === 'KK') {
       params.native.notation = 'compact';
       params.native.compactDisplay = 'long';
-    }
-
-    if (token === 'sign-auto') params.native.signDisplay = 'auto';
-    if (token === 'sign-always' || token === '+!') params.native.signDisplay = 'always';
-    if (token === 'sign-never' || token === '+_') params.native.signDisplay = 'never';
-    if (token === 'sign-except-zero' || token === '+?') params.native.signDisplay = 'exceptZero';
-
-    if (token.startsWith('sign-accounting') || token.startsWith('()')) params.native.currencySign = 'accounting';
-    if (token === 'sign-accounting-always' || token === '()!') params.native.signDisplay = 'always';
-    if (token === 'sign-accounting-except-zero' || token === '()?') params.native.signDisplay = 'exceptZero';
-
-    if (token === 'group-always') params.native.useGrouping = 'always' as any;
-    if (token === 'group-auto') params.native.useGrouping = 'auto' as any;
-    if (token === 'group-off' || token === ',_') params.native.useGrouping = false;
-    if (token === 'group-min-2' || token === ',?') params.native.useGrouping = 'min2' as any;
+    } else if (token === 'sign-auto') params.native.signDisplay = 'auto';
+    else if (token === 'sign-always' || token === '+!') params.native.signDisplay = 'always';
+    else if (token === 'sign-never' || token === '+_') params.native.signDisplay = 'never';
+    else if (token === 'sign-except-zero' || token === '+?') params.native.signDisplay = 'exceptZero';
+    else if (token === 'sign-accounting-always' || token === '()!') {
+      params.native.signDisplay = 'always';
+      params.native.currencySign = 'accounting';
+    } else if (token === 'sign-accounting-except-zero' || token === '()?') {
+      params.native.signDisplay = 'exceptZero';
+      params.native.currencySign = 'accounting';
+    } else if (token === 'group-always') params.native.useGrouping = 'always' as any;
+    else if (token === 'group-auto') params.native.useGrouping = 'auto' as any;
+    else if (token === 'group-off' || token === ',_') params.native.useGrouping = false;
+    else if (token === 'group-min-2' || token === ',?') params.native.useGrouping = 'min2' as any;
+    else throw new Error(`Unexpected token "${token}" in "${template}" template of "${variableName}" interpolation`);
   }
+
   return params;
 };
 

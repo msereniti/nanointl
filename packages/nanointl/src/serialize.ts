@@ -59,7 +59,9 @@ export const serializeIcu = <T = string>(
     if (typeof node === 'string') {
       result = reducer.reduce(result, node, 'string');
     } else if (typeof node === 'object' && node !== null) {
-      if (node.type === 'variable') {
+      if (node.type === 'pure-text') {
+        result = reducer.reduce(result, node.text, 'string');
+      } else if (node.type === 'variable') {
         if (!values || !(node.name in values)) {
           throw new Error(`Variable "${node.name}" was not provided for string "${options?.original}"`);
         }

@@ -6,13 +6,36 @@ import { numberPlugin } from './number';
 const formatEnMessage = <Message extends string>(message: Message, values: ICUVariablesMapFromTemplate<Message> | null) =>
   makeIntl('en', { message }, { plugins: [numberPlugin] }).formatMessage('message', values as any) as string;
 
-describe('Numbers parser', () => {
+describe('Numbers', () => {
+  test('escaping', () => {
+    expect(formatEnMessage("'{num, number, ::percent}'", { num: 0.25 })).toBe('{num, number, ::percent}');
+  });
+  test('integer', () => {
+    expect(formatEnMessage('{num, number, integer}', { num: 42.32 })).toBe('42');
+  });
   test('Percents', () => {
     expect(formatEnMessage('{num, number, ::percent}', { num: 0.25 })).toBe('25%');
     expect(formatEnMessage('{num, number, ::%}', { num: 0.25 })).toBe('25%');
   });
-  test('Fixed fraction', () => {
-    expect(formatEnMessage('{num, number, ::.00}', { num: 25 })).toBe('25.00');
+  describe('Digits count', () => {
+    test('Fixed fraction', () => {
+      expect(formatEnMessage('{num, number, ::.00}', { num: 25 })).toBe('25.00');
+    });
+    test('Maximal fraction', () => {
+      expect(formatEnMessage('{num, number, ::.00####}', { num: Math.PI })).toBe('3.141593');
+    });
+    test('Minimal fraction ', () => {
+      expect(formatEnMessage('{num, number, ::.0*}', { num: Math.PI })).toBe('3.141592653589793');
+    });
+    test('Fixed significant', () => {
+      expect(formatEnMessage('{num, number, ::/@@@}', { num: Math.PI * 1000 })).toBe('3,140');
+    });
+    test('Maximal significant', () => {
+      expect(formatEnMessage('{num, number, ::/@@####}', { num: Math.PI })).toBe('3.14159');
+    });
+    test('Minimal significant ', () => {
+      expect(formatEnMessage('{num, number, ::/@*}', { num: Math.PI })).toBe('3.141592653589793');
+    });
   });
   test('Percents and fixed fraction', () => {
     expect(formatEnMessage('{num, number, ::percent .00}', { num: 0.25 })).toBe('25.00%');

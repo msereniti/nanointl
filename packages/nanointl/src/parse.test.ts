@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { parseIcu } from './parse';
+import { AstNode, parseIcu, PostParser } from './parse';
+import { markdownPlugin } from './markdown';
+import { tagsPlugin } from './tags';
 
 describe('Parser edge cases', () => {
   test('Select + plural', () => {
@@ -15,7 +17,7 @@ describe('Parser edge cases', () => {
           bracketsGroup: 1,
         },
         cardinal: true,
-        options: { '0': [`wasn't`], other: ['was'] },
+        options: { '0': ['wasn', { type: 'pure-text', text: "'" }, 't'], other: ['was'] },
       },
       ' clicked ',
       {
@@ -38,7 +40,7 @@ describe('Parser edge cases', () => {
               },
               name: 'number',
               optionsPart: false,
-              rawData: '',
+              rawData: '#',
               type: 'external',
               variableName: 'count',
             },
@@ -47,6 +49,59 @@ describe('Parser edge cases', () => {
         },
       },
       '.',
+    ]);
+  });
+  test('escaping triggers text nodes split', () => {
+    expect(parseIcu(`It''s how {person}' makes' interpolation: '{interpolated_variable}'`, {})).toEqual([
+      'It',
+      {
+        type: 'pure-text',
+        text: "'",
+      },
+      's how ',
+      {
+        type: 'variable',
+        name: 'person',
+        bracketsGroup: 1,
+      },
+      {
+        type: 'pure-text',
+        text: ' makes',
+      },
+      ' interpolation: ',
+      {
+        type: 'pure-text',
+        text: '{interpolated_variable}',
+      },
+    ]);
+  });
+  test('post parsers combination', () => {
+    const postParsers: PostParser<AstNode[], AstNode[]>[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    const noop = () => {};
+    tagsPlugin.init({ addPostParser: (postParser) => postParsers.push(postParser), addSerializer: noop, addParser: noop });
+    markdownPlugin.init({ addPostParser: (postParser) => postParsers.push(postParser), addSerializer: noop, addParser: noop });
+    expect(parseIcu(`It''s how {person}' makes' interpolation: '{interpolated_variable}'`, { postParsers })).toEqual([
+      'It',
+      {
+        type: 'pure-text',
+        text: "'",
+      },
+      's how ',
+      {
+        type: 'variable',
+        name: 'person',
+        bracketsGroup: 1,
+      },
+      {
+        type: 'pure-text',
+        text: ' makes',
+      },
+      ' interpolation: ',
+      {
+        type: 'pure-text',
+        text: '{interpolated_variable}',
+      },
     ]);
   });
 });

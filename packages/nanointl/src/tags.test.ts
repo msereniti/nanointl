@@ -43,6 +43,9 @@ describe('tags', () => {
   test('wrong tags order throws', () => {
     expect(() => tagsChunkParser('Hello <i>before<b>bold and italic text</i>after</b> world')).toThrowError();
   });
+  test('partially non closed tags throw', () => {
+    expect(() => tagsChunkParser('Hello <i>before</i')).toThrowError();
+  });
   test('external store', () => {
     const externalStore = makeTagsParsingExternalStore();
     tagsChunkParser('Hello <b>bold ', externalStore);

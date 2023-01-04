@@ -37,7 +37,7 @@ describe('pure intl', () => {
   test('Handles nested structures', () => {
     expect(
       formatEnMessage(
-        '{gender, select, female {She has {count, plural, one {apple} other {{count} apples}}} male {He has {count, plural, one {apple} other {{count} apples}}} other {They have {count, plural, one {apple} other {{count} apples}}}}',
+        '{gender, select, female {She has {count, plural, one {an apple} other {{count} apples}}} male {He has {count, plural, one {apple} other {{count} apples}}} other {They have {count, plural, one {apple} other {{count} apples}}}}',
         { gender: 'female', count: 10 },
       ),
     ).toBe('She has 10 apples');

@@ -21,14 +21,12 @@ export type TagsParsingStore = {
   parentAstChain: TagsAstNode[][];
   ast: (TagsAstNode | AstNode)[];
   tagsChain: TagNode[];
-  escaping: boolean;
 };
 
 export const makeTagsParsingExternalStore = (): TagsParsingStore => ({
   parentAstChain: [],
   ast: [],
   tagsChain: [],
-  escaping: false,
 });
 
 export const tagsChunkParser = (message: string, externalStore?: TagsParsingStore): TagsAstNode[] | undefined => {
@@ -54,15 +52,7 @@ export const tagsChunkParser = (message: string, externalStore?: TagsParsingStor
       continue;
     }
 
-    const currentEscaping = store.escaping;
-    if (char === "'") {
-      store.escaping = !store.escaping;
-      if (message[i - 1] !== "'") {
-        continue;
-      }
-    }
-
-    if (char === '<' && !currentEscaping) {
+    if (char === '<') {
       closingTag = false;
       pushCurrentPartToAst();
       currentAstPart = {
@@ -109,6 +99,9 @@ export const tagsChunkParser = (message: string, externalStore?: TagsParsingStor
     }
   }
 
+  if (typeof currentAstPart === 'object' && currentAstPart?.name === 'tag') {
+    throw new Error(`Unclosed tag ${currentAstPart.variableName}`);
+  }
   pushCurrentPartToAst();
   if (!externalStore) return store.parentAstChain[0] ?? store.ast;
 };
@@ -143,6 +136,9 @@ export const tagsPostParser: PostParser<AstNode[], AstNode[]> = (icuAst: AstNode
     }
   }
 
+  if (store.parentAstChain.length !== 0) {
+    throw new Error(`Unclosed tag ${store.parentAstChain[0][0]}`);
+  }
   return store.ast as AstNode[];
 };
 

@@ -43,7 +43,19 @@ type ExternalNode<T = any> = {
   data: T;
   rawData: string;
 };
-export type AstNode = string | VariableNode | PluralNode | PluralExactValue | PluralOffset | SelectNode | ExternalNode;
+type PureTextNode = {
+  type: 'pure-text';
+  text: string;
+};
+export type AstNode =
+  | string
+  | VariableNode
+  | PluralNode
+  | PluralExactValue
+  | PluralOffset
+  | SelectNode
+  | ExternalNode
+  | PureTextNode;
 
 export type ExternalParser<Params = unknown> = (rawData: string, variableName: string, verboseInput?: any) => Params;
 export type ExternalParsers<Params = unknown> = {
@@ -139,9 +151,12 @@ export const parseIcu = (message: string, options: ParseIcuOptions): AstNode[] =
     const currentEscaping = escaping;
     if (char === "'") {
       escaping = !escaping;
-      if (message[i - 1] !== "'") {
-        continue;
+      nextPart(char);
+      if (message[i - 1] === "'") {
+        currentAstPart = { type: 'pure-text', text: "'" };
+        nextPart(char);
       }
+      continue;
     }
     const prevDepth = depth;
 
@@ -189,7 +204,7 @@ export const parseIcu = (message: string, options: ParseIcuOptions): AstNode[] =
           optionsPart: false,
           variableName: parentNode.variable.name,
           data: { offset: parentNode.offset?.value },
-          rawData: '',
+          rawData: '#',
         };
 
         nextPart(char);
@@ -207,12 +222,14 @@ export const parseIcu = (message: string, options: ParseIcuOptions): AstNode[] =
     if (prevDepth !== depth) continue;
 
     if (currentAstPart === null) {
-      if (valueDepth) currentAstPart = '';
-      else if (char === ' ' && !currentEscaping) continue;
-      else if (char === '\n' && !currentEscaping) continue;
-      else if (char === '\r' && !currentEscaping) continue;
-      else if (char === '\t' && !currentEscaping) continue;
-      else if (char === '=' && !currentEscaping) {
+      if (currentEscaping) {
+        currentAstPart = { type: 'pure-text', text: '' };
+      } else if (valueDepth) currentAstPart = '';
+      else if (char === ' ') continue;
+      else if (char === '\n') continue;
+      else if (char === '\r') continue;
+      else if (char === '\t') continue;
+      else if (char === '=') {
         currentAstPart = { type: 'plural-exact-value', value: '' } as AstNode;
         continue;
       } else {
@@ -232,6 +249,7 @@ export const parseIcu = (message: string, options: ParseIcuOptions): AstNode[] =
 
     if (typeof currentAstPart === 'string') currentAstPart += char;
     if (typeof currentAstPart === 'object' && currentAstPart !== null) {
+      if (currentAstPart.type === 'pure-text') currentAstPart.text += char;
       if (currentAstPart.type === 'plural-exact-value') currentAstPart.value += char;
       if (currentAstPart.type === 'plural-offset') currentAstPart.rawValue += char;
       if (currentAstPart.type === 'variable') {

@@ -9,7 +9,7 @@ assertTypesEqual<I<'Message without interpolations'>, {}>(true);
 assertTypesEqual<I<'Found {count, plural, =0 {no results} one {1 result} other {{count} results}}'>, { count: number }>(true);
 assertTypesEqual<I<'{gender, select, male {xy}, female {xx}}'>, { gender: 'male' | 'female' }>(true);
 assertTypesEqual<
-  I<'{gender, select, female {She has {count, plural, one {apple} other {{count} apples}}} male {He has {count, plural, one {apple} other {{count} apples}}} other {They have {count, plural, one {apple} other {{count} apples}}}}'>,
+  I<'{gender, select, female {She has {count, plural, one {an apple} other {{count} apples}}} male {He has {count, plural, one {apple} other {{count} apples}}} other {They have {count, plural, one {apple} other {{count} apples}}}}'>,
   { gender: 'male' | 'female' | 'other'; count: number }
 >(true);
 assertTypesEqual<I<'Oh, hi {name}!'>, { name: any }>(true);
