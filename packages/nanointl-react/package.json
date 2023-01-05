@@ -1,6 +1,6 @@
 {
   "name": "@nanointl/react",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Michael Sereniti",
   "description": "Optional package provides first class citizen support for nanointl with React framework.",
   "license": "MIT",
@@ -16,11 +16,11 @@
     "@types/react": "18.0.20",
     "microbundle": "^0.15.1",
     "react": "16.8.6",
-    "nanointl": "^0.0.1"
+    "nanointl": "^0.0.3"
   },
   "peerDependencies": {
     "react": "^16.8",
-    "nanointl": "^0.0.1"
+    "nanointl": "^0.0.3"
   },
   "scripts": {
     "clear": "rm -rf dist",

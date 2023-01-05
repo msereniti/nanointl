@@ -64,7 +64,7 @@ importers:
       typescript-json-as-const-plugin: '*'
       vite: ^3.1.0
     dependencies:
-      '@nanointl/react': link:../../packages/nanointl-react
+      '@nanointl/react': 0.0.1_fooai64zsqqfvzcvsmihefyv2e
       '@nanointl/unplugin': link:../../packages/nanointl-unplugin
       nanointl: 0.0.1
       react: 18.2.0
@@ -105,12 +105,12 @@ importers:
     specifiers:
       '@types/react': 18.0.20
       microbundle: ^0.15.1
-      nanointl: ^0.0.1
+      nanointl: ^0.0.3
       react: 16.8.6
     devDependencies:
       '@types/react': 18.0.20
       microbundle: 0.15.1
-      nanointl: 0.0.1
+      nanointl: link:../nanointl
       react: 16.8.6
 
   packages/nanointl-unplugin:
@@ -2121,6 +2121,16 @@ packages:
       '@markdoc/markdoc': 0.1.7
       js-yaml: 4.1.0
       next: 13.0.2_biqbaboplfbrettd7655fr4n2y
+      react: 18.2.0
+    dev: false
+
+  /@nanointl/react/0.0.1_fooai64zsqqfvzcvsmihefyv2e:
+    resolution: {integrity: sha512-FGBBL7wKJrpgbDKtGKikGZAr50Yfh/yGc3XsdC+fS8jGJBODR0JEpNA7Eod5cmm1DKd9/6ZcXEWA7PXy8c3/GQ==}
+    peerDependencies:
+      nanointl: ^0.0.1
+      react: ^16.8
+    dependencies:
+      nanointl: 0.0.1
       react: 18.2.0
     dev: false
 
@@ -5227,6 +5237,7 @@ packages:
 
   /nanointl/0.0.1:
     resolution: {integrity: sha512-0vTFIXYpUrpweb0p8mcLRsVAELMqY/mSKePLNHGODXo2ichTfqITRoU98Xv/tBWX/jkji6UjWegNzosYsgzu8g==}
+    dev: false
 
   /natural-compare-lite/1.4.0:
     resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}
