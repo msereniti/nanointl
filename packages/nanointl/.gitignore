@@ -1,3 +1,5 @@
 node_modules
 dist
-./*.d.ts
+./datetime.ts
+*.ts
+*.d.ts

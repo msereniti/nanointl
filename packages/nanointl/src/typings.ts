@@ -161,7 +161,9 @@ declare global {
     selectordinal: SelectordinalParser<Template>;
   }
   // @ts-ignore
-  interface NanointlOverallParsers<Template extends string, Values extends { [key: string]: any } = {}> {}
+  interface NanointlOverallParsers<Template extends string, Values extends { [key: string]: any } = {}> {
+    ___stub: { vars: [] };
+  }
 }
 
 type BracketsParsersList<Template extends string> = UnionToArray<UnionOfValuesOf<NanointlBracketsParsers<Template>>>;

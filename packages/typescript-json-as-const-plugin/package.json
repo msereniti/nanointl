@@ -13,7 +13,8 @@
   },
   "types": "dist/typescript-json-as-const-plugin.d.ts",
   "scripts": {
-    "build": "microbundle --target node"
+    "clear": "rm -rf dist",
+    "build": "pnpm run clear && microbundle --target node"
   },
   "devDependencies": {
     "@types/minimatch": "^5.1.2",

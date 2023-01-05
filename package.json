@@ -2,9 +2,10 @@
   "scripts": {
     "test": "LANG='en.UTF-8' TZ='Europe/Madrid' vitest",
     "build": "pnpm --filter nanointl --filter @nanointl/* --filter typescript-json-as-const-plugin run build",
+    "clear": "pnpm --filter nanointl --filter @nanointl/* --filter typescript-json-as-const-plugin run clear",
     "lint:es": "eslint packages && eslint examples && eslint website",
     "lint:es:fix": "eslint packages --fix & eslint examples --fix & eslint website --fix",
-    "lint:ts": "tsc --noEmit"
+    "lint:ts": "pnpm run clear && tsc --noEmit"
   },
   "keywords": [],
   "author": "Michael Sereniti",

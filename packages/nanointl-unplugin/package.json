@@ -19,7 +19,8 @@
   },
   "types": "dist/nanointl-unplugin.d.ts",
   "scripts": {
-    "build": "rm -rf dist && microbundle --target node && cp fake-runtime/* dist"
+    "clear": "rm -rf dist",
+    "build": "pnpm run clear && microbundle --target node && cp fake-runtime/* dist"
   },
   "dependencies": {
     "unplugin": "^0.10.2"

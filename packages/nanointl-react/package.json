@@ -12,13 +12,15 @@
   "devDependencies": {
     "@types/react": "18.0.20",
     "microbundle": "^0.15.1",
-    "react": "16.8.6"
+    "react": "16.8.6",
+    "nanointl": "^0.0.1"
   },
   "peerDependencies": {
     "react": "^16.8",
     "nanointl": "^0.0.1"
   },
   "scripts": {
-    "build": "rm -rf dist && microbundle"
+    "clear": "rm -rf dist",
+    "build": "pnpm run clear && microbundle"
   }
 }

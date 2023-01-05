@@ -26,6 +26,7 @@ const time = {
 const outputs: string[] = [];
 const shuffleArray = <T extends any[]>(arr: T): T => arr.sort(() => 0.5 - Math.random());
 
+// @ts-ignore
 const nanointl = await import('nanointl');
 const runNanointl = async () => {
   const startTime = hrtime.bigint();

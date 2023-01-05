@@ -7,52 +7,53 @@
     "test": "vitest",
     "lint": "eslint src",
     "ts": "tsc --noEmit",
-    "build": "bash ./build.sh"
+    "clear": "rm -rf ./*.ts && rm -rf dist",
+    "build": "pnpm run clear && bash ./build.sh"
   },
   "source": "src/index.ts",
   "main": "dist/index.js",
   "umd:main": "dist/index.umd.js",
   "cjs:main": "dist/index.cjs",
   "module": "dist/index.mjs",
-  "types": "index.d.ts",
+  "types": "index.ts",
   "exports": {
     ".": {
-      "types": "./index.d.ts",
+      "types": "./index.ts",
       "require": "./dist/index.cjs",
       "default": "./dist/index.mjs"
     },
     "./number": {
-      "types": "./number.d.ts",
+      "types": "./number.ts",
       "require": "./dist/number.cjs",
       "default": "./dist/number.mjs"
     },
     "./datetime": {
-      "types": "./datetime.d.ts",
+      "types": "./datetime.ts",
       "require": "./dist/datetime.cjs",
       "default": "./dist/datetime.mjs"
     },
     "./tags": {
-      "types": "./tags.d.ts",
+      "types": "./tags.ts",
       "require": "./dist/tags.cjs",
       "default": "./dist/tags.mjs"
     },
     "./markdown": {
-      "types": "./markdown.d.ts",
+      "types": "./markdown.ts",
       "require": "./dist/markdown.cjs",
       "default": "./dist/markdown.mjs"
     },
     "./parse": {
-      "types": "./parse.d.ts",
+      "types": "./parse.ts",
       "require": "./dist/parse.cjs",
       "default": "./dist/parse.mjs"
     },
     "./serialize": {
-      "types": "./serialize.d.ts",
+      "types": "./serialize.ts",
       "require": "./dist/serialize.cjs",
       "default": "./dist/serialize.mjs"
     },
     "./intlBase": {
-      "types": "./intlBase.d.ts",
+      "types": "./intlBase.ts",
       "require": "./dist/intlBase.cjs",
       "default": "./dist/intlBase.mjs"
     }
