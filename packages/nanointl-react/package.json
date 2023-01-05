@@ -4,6 +4,7 @@
   "author": "Michael Sereniti",
   "description": "Optional package provides first class citizen support for nanointl with React framework.",
   "license": "MIT",
+  "private": false,
   "type": "module",
   "source": "src/nanointl-react.tsx",
   "main": "dist/index.js",

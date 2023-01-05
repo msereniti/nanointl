@@ -5,6 +5,7 @@
   "license": "MIT",
   "description": "Tiny and robust localization library.",
   "type": "module",
+  "private": false,
   "scripts": {
     "test": "vitest",
     "lint": "eslint src",

@@ -4,6 +4,7 @@
   "author": "Michael Sereniti",
   "license": "MIT",
   "description": "Unplugin that allows you to bundle application for any specific localization locale and load other locales dynamically.",
+  "private": false,
   "source": "src/nanointl-unplugin.ts",
   "main": "dist/nanointl-unplugin.js",
   "umd:main": "dist/nanointl-unplugin.umd.js",

@@ -4,6 +4,7 @@
   "author": "Michael Sereniti",
   "license": "MIT",
   "description": "Plugin changes the way how typescript inferencing JSON files typings to `as const` behavior.",
+  "private": false,
   "source": "src/typescript-json-as-const-plugin.ts",
   "main": "dist/typescript-json-as-const-plugin.js",
   "umd:main": "dist/typescript-json-as-const-plugin.umd.js",
