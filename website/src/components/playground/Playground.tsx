@@ -242,7 +242,7 @@ export const Playground: React.FC = () => {
             </span>
           )}
         </div>
-        <div className="mt-4 flex space-x-2 text-xs">
+        <div className="mt-4 flex space-x-2 text-xs flex-wrap">
           {presets.map((preset) => (
             <div
               key={preset.name}

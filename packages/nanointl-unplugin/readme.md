@@ -13,7 +13,7 @@ pnpm add @nanointl/unplugin
 
 1. Place localization json files into specific path of your project (like `./src/locales/en.json`, `./src/locales/es.json` and `./src/locales/fr.json`).
 
-2. Import plugin for your bundler (available exports are `nanointlVitePlugin`, `nanointlEsbuildPlugin`,`nanointlRollupPlugin`, `nanointlWebpackPlugin` and just `nanointlUnplugin`).
+2. Import plugin for your bundler (available exports are `nanointlVitePlugin`, `nanointlEsbuildPlugin`, `nanointlRollupPlugin`, `nanointlWebpackPlugin` and just `nanointlUnplugin`).
 
 ```diff
 import { defineConfig } from 'vite';
