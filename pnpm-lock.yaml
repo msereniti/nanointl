@@ -66,7 +66,7 @@ importers:
     dependencies:
       '@nanointl/react': link:../../packages/nanointl-react
       '@nanointl/unplugin': link:../../packages/nanointl-unplugin
-      nanointl: link:../../packages/nanointl
+      nanointl: 0.0.1
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
@@ -84,7 +84,7 @@ importers:
       brotli: ^1.3.3
       esbuild: ^0.16.13
       make-plural: ^7.2.0
-      nanointl: workspace:^0.0.1
+      nanointl: 0.0.3
       tsm: ^2.3.0
     dependencies:
       '@formatjs/intl': 2.6.3
@@ -110,7 +110,7 @@ importers:
     devDependencies:
       '@types/react': 18.0.20
       microbundle: 0.15.1
-      nanointl: link:../nanointl
+      nanointl: 0.0.1
       react: 16.8.6
 
   packages/nanointl-unplugin:
@@ -148,7 +148,7 @@ importers:
       clsx: ^1.2.1
       eslint-config-next: 13.0.2
       focus-visible: ^5.2.0
-      nanointl: workspace:0.0.1
+      nanointl: 0.0.3
       next: 13.0.2
       postcss-focus-visible: ^6.0.4
       postcss-import: ^14.1.0
@@ -5224,6 +5224,9 @@ packages:
     resolution: {integrity: sha512-MqBkQh/OHTS2egovRtLk45wEyNXwF+cokD+1YPf9u5VfJiRdAiRwB2froX5Co9Rh20xs4siNPm8naNotSD6RBw==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
+
+  /nanointl/0.0.1:
+    resolution: {integrity: sha512-0vTFIXYpUrpweb0p8mcLRsVAELMqY/mSKePLNHGODXo2ichTfqITRoU98Xv/tBWX/jkji6UjWegNzosYsgzu8g==}
 
   /natural-compare-lite/1.4.0:
     resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}

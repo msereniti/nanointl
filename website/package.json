@@ -21,7 +21,7 @@
     "autoprefixer": "^10.4.12",
     "clsx": "^1.2.1",
     "focus-visible": "^5.2.0",
-    "nanointl": "workspace:0.0.1",
+    "nanointl": "0.0.3",
     "next": "13.0.2",
     "postcss-focus-visible": "^6.0.4",
     "postcss-import": "^14.1.0",
