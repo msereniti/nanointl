@@ -175,7 +175,7 @@ export const markdownChunkParser = (message: string, externalStore?: MarkdownPar
 
   pushCurrentPartToAst();
 
-  if (!externalStore) return store.parentAstChain[0] ?? store.ast;
+  if (!externalStore) return (store.parentAstChain[0] ?? store.ast) as any;
 };
 
 export const postParse = (icuAst: (AstNode | MarkdownAstNode)[]) => {

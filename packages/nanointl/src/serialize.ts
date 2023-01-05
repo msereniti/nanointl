@@ -90,7 +90,7 @@ export const serializeIcu = <T = string>(
       } else if (node.type === 'select') {
         const value = values?.[node.variable.name as keyof typeof values];
         const nestedAst = node.options[value as keyof typeof node.options] ?? node.options.other ?? String(value);
-        result = reducer.reduce(result, serializeIcu(nestedAst, values, intl, options), 'select');
+        result = reducer.reduce(result, serializeIcu(nestedAst as AstNode[], values, intl, options), 'select');
       } else if (node.type === 'external') {
         const value = values[node.variableName];
         if (!options?.externalSerializers?.[node.name]) {

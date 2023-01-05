@@ -52,7 +52,7 @@ export type IntlInstance<
 
 type Cache<V> = { s: Map<any, Cache<V>>; w: WeakMap<any, Cache<V>>; v: V | undefined };
 const getFromCache = <T = unknown>(cache: Cache<T>, path: any[]): T => {
-  if (!cache) return cache;
+  if (!cache) return cache as any;
   if (path.length === 0) return cache.v as T;
   if (typeof path[0] === 'object' && path[0] !== null) return getFromCache(cache?.w.get(path[0]) as Cache<T>, path.slice(1));
   return getFromCache<T>(cache?.s.get(path[0]) as Cache<T>, path.slice(1));

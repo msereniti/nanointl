@@ -103,7 +103,7 @@ export const tagsChunkParser = (message: string, externalStore?: TagsParsingStor
     throw new Error(`Unclosed tag ${currentAstPart.variableName}`);
   }
   pushCurrentPartToAst();
-  if (!externalStore) return store.parentAstChain[0] ?? store.ast;
+  if (!externalStore) return (store.parentAstChain[0] ?? store.ast) as any;
 };
 
 export const tagsPostParser: PostParser<AstNode[], AstNode[]> = (icuAst: AstNode[]) => {
