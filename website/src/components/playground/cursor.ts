@@ -1,6 +1,6 @@
 const getParentsChain = (node: Node, rootParent: Element): number[] => {
   if (node === rootParent || !node.parentNode) return [];
-  return [...getParentsChain(node.parentNode, rootParent), [...node.parentNode!.childNodes].indexOf(node)];
+  return [...getParentsChain(node.parentNode, rootParent), [...(node.parentNode!.childNodes as any)].indexOf(node)];
 };
 const getNodeByChain = (node: Node, chain: number[]): Node =>
   chain.length ? getNodeByChain(node.childNodes[chain[0]], chain.slice(1)) : node;

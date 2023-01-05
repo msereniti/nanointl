@@ -74,7 +74,7 @@ export const Playground: React.FC = () => {
       if (!editedInterpolationContainerRef.current) return;
       const cursorPosition = getCursorPosition(editedInterpolationContainerRef.current);
       const textValue = editedInterpolationContainerRef.current.textContent.replaceAll('\n', '').replaceAll('\r', '');
-      let parsedValue = textValue;
+      let parsedValue: any = textValue;
       if (type === 'number') {
         parsedValue = parseFloat(textValue);
       } else if (type === 'date') {
@@ -95,7 +95,7 @@ export const Playground: React.FC = () => {
   const safeOutput = React.useMemo(() => {
     if (typeof output === 'string') return output;
     if (!Array.isArray(output)) return null;
-    return output.map((chunk) => {
+    return (output as any[]).map((chunk) => {
       if (typeof chunk === 'object' && '$$typeof' in chunk) return chunk;
       return String(chunk);
     });
@@ -323,8 +323,8 @@ export const Playground: React.FC = () => {
                     contentEditable={true}
                     ref={localeContainerRef}
                     className="focus:outline-none focus:border-b border-violet-300"
-                    onInput={handleLocaleChange}
-                    onPaste={handleLocaleChange}
+                    onInput={handleLocaleChange as any}
+                    onPaste={handleLocaleChange as any}
                     dangerouslySetInnerHTML={{ __html: locale }}
                   />
                   '
@@ -384,7 +384,7 @@ export const Playground: React.FC = () => {
                 if (interpolation.type === 'select') variableName = interpolation.variable.name;
                 if (interpolation.type === 'external') variableName = interpolation.variableName;
 
-                const valueContainerProps = {
+                const valueContainerProps: any = {
                   onFocus: (event) => (editedInterpolationContainerRef.current = event.target),
                   contentEditable: true,
                   className: 'focus:outline-none focus:border-b border-violet-300',
