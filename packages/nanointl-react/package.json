@@ -2,6 +2,8 @@
   "name": "@nanointl/react",
   "version": "0.0.1",
   "author": "Michael Sereniti",
+  "description": "Optional package provides first class citizen support for nanointl with React framework.",
+  "license": "MIT",
   "type": "module",
   "source": "src/nanointl-react.tsx",
   "main": "dist/index.js",
@@ -22,5 +24,13 @@
   "scripts": {
     "clear": "rm -rf dist",
     "build": "pnpm run clear && microbundle"
-  }
+  },
+  "keywords": [
+    "i18n",
+    "internationalization",
+    "localization",
+    "translation",
+    "react",
+    "nanointl"
+  ]
 }

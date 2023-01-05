@@ -2,6 +2,8 @@
   "name": "typescript-json-as-const-plugin",
   "version": "0.0.1",
   "author": "Michael Sereniti",
+  "license": "MIT",
+  "description": "Plugin changes the way how typescript inferencing JSON files typings to `as const` behavior.",
   "source": "src/typescript-json-as-const-plugin.ts",
   "main": "dist/typescript-json-as-const-plugin.js",
   "umd:main": "dist/typescript-json-as-const-plugin.umd.js",
@@ -22,5 +24,11 @@
   },
   "dependencies": {
     "minimatch": "^5.1.1"
-  }
+  },
+  "keywords": [
+    "typescript",
+    "json",
+    "as-const",
+    "nanointl"
+  ]
 }

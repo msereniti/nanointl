@@ -1,7 +1,9 @@
 {
   "name": "nanointl",
   "version": "0.0.1",
-  "description": "",
+  "author": "Michael Sereniti",
+  "license": "MIT",
+  "description": "Tiny and robust localization library.",
   "type": "module",
   "scripts": {
     "test": "vitest",
@@ -58,9 +60,13 @@
       "default": "./dist/intlBase.mjs"
     }
   },
-  "keywords": [],
-  "author": "Michael Sereniti",
-  "license": "ISC",
+  "keywords": [
+    "i18n",
+    "internationalization",
+    "localization",
+    "translation",
+    "nanointl"
+  ],
   "devDependencies": {
     "microbundle": "^0.15.1"
   }

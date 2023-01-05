@@ -9,7 +9,7 @@
   },
   "keywords": [],
   "author": "Michael Sereniti",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
     "@typescript-eslint/eslint-plugin": "^5.35.1",
