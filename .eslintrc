@@ -31,13 +31,5 @@
     "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/ban-ts-comment": "off"
   },
-  "overrides": [
-    {
-      "files": "src/formatjs-compat/generated/**/*",
-      "rules": {
-        "no-irregular-whitespace": "off",
-        "@typescript-eslint/ban-ts-comment": "off"
-      }
-    }
-  ]
+  "overrides": []
 }

@@ -31,3 +31,10 @@ apps/*/package-lock.json
 apps/forntnend/src/locales/*.json.d.ts
 
 utils/.formatjs-repo-clone
+
+# website
+/website/.next/
+/website/out/
+
+# production
+/website/build

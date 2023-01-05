@@ -12,48 +12,48 @@
   "source": "src/index.ts",
   "main": "dist/index.js",
   "umd:main": "dist/index.umd.js",
-  "cjs:main": "dist/index.cjs.js",
+  "cjs:main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "index.d.ts",
   "exports": {
     ".": {
       "types": "./index.d.ts",
-      "require": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "default": "./dist/index.mjs"
     },
     "./number": {
       "types": "./number.d.ts",
-      "require": "./dist/number.js",
+      "require": "./dist/number.cjs",
       "default": "./dist/number.mjs"
     },
     "./datetime": {
       "types": "./datetime.d.ts",
-      "require": "./dist/datetime.js",
+      "require": "./dist/datetime.cjs",
       "default": "./dist/datetime.mjs"
     },
     "./tags": {
       "types": "./tags.d.ts",
-      "require": "./dist/tags.js",
+      "require": "./dist/tags.cjs",
       "default": "./dist/tags.mjs"
     },
     "./markdown": {
       "types": "./markdown.d.ts",
-      "require": "./dist/markdown.js",
+      "require": "./dist/markdown.cjs",
       "default": "./dist/markdown.mjs"
     },
     "./parse": {
       "types": "./parse.d.ts",
-      "require": "./dist/parse.js",
+      "require": "./dist/parse.cjs",
       "default": "./dist/parse.mjs"
     },
     "./serialize": {
       "types": "./serialize.d.ts",
-      "require": "./dist/serialize.js",
+      "require": "./dist/serialize.cjs",
       "default": "./dist/serialize.mjs"
     },
     "./intlBase": {
       "types": "./intlBase.d.ts",
-      "require": "./dist/intlBase.js",
+      "require": "./dist/intlBase.cjs",
       "default": "./dist/intlBase.mjs"
     }
   },

@@ -2,7 +2,7 @@
   "scripts": {
     "test": "LANG='en.UTF-8' TZ='Europe/Madrid' vitest",
     "build": "pnpm --filter nanointl --filter @nanointl/* --filter typescript-json-as-const-plugin run build",
-    "lint:es": "eslint packages && eslint examples",
+    "lint:es": "eslint packages && eslint examples && eslint website",
     "lint:ts": "tsc --noEmit"
   },
   "keywords": [],

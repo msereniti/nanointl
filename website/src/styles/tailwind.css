@@ -1,0 +1,50 @@
+@import 'tailwindcss/base';
+@import './fonts.css';
+@import './docsearch.css';
+@import './prism.css';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+code::before {
+  content: '' !important;
+}
+code::after {
+  content: '' !important;
+}
+
+.prose :where(blockquote p:first-of-type):not(:where([class~='not-prose'] *))::before {
+  content: '' !important;
+}
+.prose :where(blockquote p:first-of-type):not(:where([class~='not-prose'] *))::after {
+  content: '' !important;
+}
+
+code:not(pre code) {
+  background-color: rgba(0, 0, 0, 0.05);
+
+  padding: 0.2em 0.4em;
+  font-size: medium;
+}
+.dark code:not(pre code) {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.prism-code::-webkit-scrollbar,
+.dark::-webkit-scrollbar {
+  background-color: theme('colors.slate.800');
+}
+
+.prism-code::-webkit-scrollbar-thumb,
+.dark::-webkit-scrollbar-thumb {
+  background-color: theme('colors.slate.600');
+}

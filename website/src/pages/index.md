@@ -1,11 +1,19 @@
-# nanointl
+---
+pageTitle: nanointl - tiny and robust localization library.
+description: Resolve all your localization troubles by delegating locales edge cases to translators and be on rise to the occasion.
+---
 
-Resolve all your localization troubles by delegating locales edge cases to translators and be on rise to the occasion.
+{% quick-links %}
 
-1. [Supercharged with ICU](#message-syntax) – Never give up how to deal with plurals in every single language.
-2. [Type safe](#strict-typings) – {variables_interpolations} are analyzed with TypeScript Template Literal Types.
-3. [Extendable with Plugins](#writing-own-plugin) – Provides basic plugins and allows to unlock unlimited power with your own.
-4. [Small and fast](#benchmarks) – Core functionality takes less then 2.7kb of your app bundle.
+{% quick-link title="Supercharged with ICU" icon="bolt" href="#message-syntax" description="Never give up how to deal with plurals in every single language." /%}
+
+{% quick-link title="Type safe" icon="safety" href="#strict-typings" description="{variables_interpolations} are analyzed with TypeScript Template Literal Types." /%}
+
+{% quick-link title="Extendable with Plugins" icon="plugins" href="#writing-own-plugin" description="Provides basic plugins and allows to unlock unlimited power with your own." /%}
+
+{% quick-link title="Small and fast" icon="rocket" href="#benchmarks" description="Core functionality takes less then 2.7kb of your app bundle." /%}
+
+{% /quick-links %}
 
 ## Installation
 
@@ -95,7 +103,9 @@ export const App: React.FC = () => {
   ...
 ```
 
-### Dynamic locales with unplugin (for Vite, Esbuild, Rollup and Webpack)
+### Dynamic locales with unplugin
+
+_for Vite, Esbuild, Rollup and Webpack_
 
 `@nanointl/unplugin` allows you to bundle application for any specific locale and load other locales dynamically.
 
@@ -242,8 +252,12 @@ Allows you to use **strong** syntax (via wrapping text into `*text*` or `**text*
 Requires you to specify how to render markdown chunks in the second argument of `formatMessage` call.
 
 ```js
-intl.formatMessage('markdownExample', { strong: ({ children }) => `<b>${children}</b>` }); // rendering to simple html
-intl.formatMessage('markdownExample', { strong: ({ children }) => <b>{children}</b> }); // rendering to React element
+intl.formatMessage('markdownExample', {
+  strong: ({ children }) => `<b>${children}</b>`,
+}); // rendering to simple html
+intl.formatMessage('markdownExample', {
+  strong: ({ children }) => <b>{children}</b>,
+}); // rendering to React element
 ```
 
 Markdown syntax may be escaped with single quotes.
@@ -437,6 +451,6 @@ Formatting 1k messages on same machine:
 | --- | --- | --- |
 | 74521 ns | 90865 ns | 62899 ns |
 
-## Contributing
-
+{% callout title="Contributing" %}
 If you found bug, want to add new feature or have question feel free to [open an issue](https://github.com/phytonmk/nanointl/issues/new) or fork repository for pull requests.
+{% /callout %}
