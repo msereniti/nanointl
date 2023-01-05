@@ -52,6 +52,7 @@ pnpm add @nanointl/react
 2. Create `IntlProvider` component, `useTranslation` and `useIntlControls` hooks via `makeReactIntl`:
 
 ```js
+// src/i18n.ts
 import { makeReactIntl } from '@nanointl/react/src/nanointl-react';
 import enMessages from './locales/en.json';
 import { tagsPlugin } from 'nanointl/tags';
@@ -62,6 +63,7 @@ export const { IntlProvider, useTranslation, useIntlControls } = makeReactIntl('
 3. Wrap React application into `IntlProvider`.
 
 ```diff
+// src/main.tsx
 + import { IntlProvider } from './i18n'
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
@@ -75,6 +77,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 4. Use localized messages via `useTranslation` or switch locales via `useIntlControls`.
 
 ```diff
+// src/App.tsx
 ...
 export const App: React.FC = () => {
 + const t = useTranslation();
@@ -129,6 +132,7 @@ export default defineConfig({
 4. Replace hardcoded locales with a special imports of plugin runtime.
 
 ```diff
+// src/i18n.ts
 import { makeReactIntl } from '@nanointl/react/src/nanointl-react';
 - import enMessages from './locales/en.json';
 + import { initLocale, initMessages, loadMessages } from '@nanointl/unplugin/runtime';

@@ -34,6 +34,7 @@ export default defineConfig({
 3. Replace hardcoded locales with a special imports of plugin runtime.
 
 ```diff
+// src/i18n.ts
 import { makeReactIntl } from '@nanointl/react/src/nanointl-react';
 - import enMessages from './locales/en.json';
 + import { initLocale, initMessages, loadMessages } from '@nanointl/unplugin/runtime';
