@@ -1,4 +1,6 @@
 {
+  "name": "nanointl-workspace",
+  "private": true,
   "scripts": {
     "test": "LANG='en.UTF-8' TZ='Europe/Madrid' vitest",
     "build": "pnpm --filter nanointl --filter @nanointl/* --filter typescript-json-as-const-plugin run build",
@@ -33,5 +35,10 @@
     "typescript-json-as-const-plugin": "*",
     "vite": "^3.1.0",
     "vitest": "^0.22.1"
+  },
+  "homepage": "https://github.com/phytonmk/nanointl",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phytonmk/nanointl.git"
   }
 }

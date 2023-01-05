@@ -39,5 +39,11 @@
     "translation",
     "unplugin",
     "nanointl"
-  ]
+  ],
+  "homepage": "https://github.com/phytonmk/nanointl",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phytonmk/nanointl.git",
+    "directory": "packages/nanointl-unplugin"
+  }
 }
