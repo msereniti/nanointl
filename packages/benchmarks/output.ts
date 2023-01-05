@@ -9,7 +9,7 @@ const results = JSON.parse(await fs.readFile(resultsPath, 'utf-8'));
 const output = `Core bundle size:
 | lingUi | formatjs | nanointl |
 | ---    | ---      | ---      |
-| ${results.size['@lingui/core']} bytes | ${results.size['@formatjs/intl']} bytes | ${results.size.nanointl} bytes |
+| ${results.size['@lingui/core']} B | ${results.size['@formatjs/intl']} B | ${results.size.nanointl} B |
 
 Formatting 1k messages on same machine:
 | lingUi | formatjs | nanointl |

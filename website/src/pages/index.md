@@ -309,6 +309,7 @@ Available tokens:
 - `sign-always` (alias is `+!`) enforces always displaying of numbers sign (`+` or `-`).
 - `sign-never` (alias is `+_`) enforces never displaying of numbers sign (`+` or `-`).
 - `sign-except-zero` (alias is `+?`) enforces always displaying of numbers sign (`+` or `-`) for all numbers except zero.
+- `sign-accounting` (alias is `()`) enforces sign accounting for units based on locale default behaviour (such as wrapping into partnership negative value of USD).
 - `sign-accounting-always` (alias is `()!`) enforces sign accounting for units (such as wrapping into partnership negative value of USD).
 - `sign-accounting-except-zero` (alias is `()?`) enforces sign accounting for units that value is not equal to zero (such as wrapping into partnership negative value of USD).
 - `group-always` enforces to always group digits (like `100,000`).
@@ -444,7 +445,7 @@ See built-in plugins for examples:
 Core bundle size:
 | lingUi | formatjs | nanointl |
 | --- | --- | --- |
-| 3526 bytes | 28322 bytes | 2714 bytes |
+| 3526 B | 28322 B | 2714 B |
 
 Formatting 1k messages on same machine:
 | lingUi | formatjs | nanointl |

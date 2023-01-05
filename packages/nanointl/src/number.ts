@@ -119,7 +119,9 @@ export const parseNumber: ExternalParser<NumberSerializationParams> = (template,
     else if (token === 'sign-always' || token === '+!') params.native.signDisplay = 'always';
     else if (token === 'sign-never' || token === '+_') params.native.signDisplay = 'never';
     else if (token === 'sign-except-zero' || token === '+?') params.native.signDisplay = 'exceptZero';
-    else if (token === 'sign-accounting-always' || token === '()!') {
+    else if (token === 'sign-accounting' || token === '()') {
+      params.native.currencySign = 'accounting';
+    } else if (token === 'sign-accounting' || token === 'sign-accounting-always' || token === '()!') {
       params.native.signDisplay = 'always';
       params.native.currencySign = 'accounting';
     } else if (token === 'sign-accounting-except-zero' || token === '()?') {

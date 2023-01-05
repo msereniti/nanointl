@@ -1,4 +1,4 @@
-import { describe, test, expect, it, beforeEach } from 'vitest';
+import { describe, test, expect, it } from 'vitest';
 import esbuild from 'esbuild';
 import fs from 'fs/promises';
 import { sep as pathSep } from 'path';

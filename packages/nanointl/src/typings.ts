@@ -219,7 +219,7 @@ type ICUVariablesArrayFromTemplate<Template extends string, Values extends { [ke
   ...RunOverallParsers<Template, Values>['vars'],
 ];
 
-// @ts-ignore
+/* @ts-ignore */
 export type ICUVariablesMapFromTemplate<Template extends string, Values extends { [key: string]: any } = {}> = VariablesArrToMap<
   // @ts-ignore
   ICUVariablesArrayFromTemplate<Template, Values>

@@ -1,4 +1,5 @@
-const withMarkdoc = require('@markdoc/next.js')
+/* eslint-disable no-undef */
+const withMarkdoc = require('@markdoc/next.js');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -7,6 +8,6 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
-}
+};
 
-module.exports = withMarkdoc()(nextConfig)
+module.exports = withMarkdoc()(nextConfig);

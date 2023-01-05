@@ -2,9 +2,18 @@
   "root": true,
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
   "parser": "@typescript-eslint/parser",
-  "parserOptions": { "project": ["./tsconfig.json", "./tsconfig.node.json"] },
+  "parserOptions": {
+    "project": [
+      "./tsconfig.json",
+      "./tsconfig.node.json",
+      "./examples/react-vite/tsconfig.json",
+      "./examples/react-vite/tsconfig.node.json",
+      "./website/tsconfig.json",
+      "./website/tsconfig.node.json"
+    ]
+  },
   "plugins": ["@typescript-eslint", "prettier"],
-  "ignorePatterns": ["dist"],
+  "ignorePatterns": ["dist", "*.d.ts"],
   "rules": {
     "@typescript-eslint/interface-name-prefix": "off",
     "@typescript-eslint/explicit-function-return-type": "off",

@@ -20,9 +20,6 @@
     "plugins": [{ "name": "typescript-json-as-const-plugin" }]
   },
   "include": ["packages"],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ]
+  "exclude": ["dist", "packages/nanointl/*.d.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

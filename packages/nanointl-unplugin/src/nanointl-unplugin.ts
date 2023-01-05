@@ -63,7 +63,7 @@ export const nanointlUnplugin: UnpluginInstance<UserOptions, false> = createUnpl
   };
 });
 
-export const nanointlVitePlugin: UnpluginInstance<UserOptions, false>['vite'] = unplugin.vite;
-export const nanointlRollupPlugin: UnpluginInstance<UserOptions, false>['rollup'] = unplugin.rollup;
-export const nanointlWebpackPlugin: UnpluginInstance<UserOptions, false>['webpack'] = unplugin.webpack;
-export const nanointlEsbuildPlugin: UnpluginInstance<UserOptions, false>['esbuild'] = unplugin.esbuild;
+export const nanointlVitePlugin: UnpluginInstance<UserOptions, false>['vite'] = nanointlUnplugin.vite;
+export const nanointlRollupPlugin: UnpluginInstance<UserOptions, false>['rollup'] = nanointlUnplugin.rollup;
+export const nanointlWebpackPlugin: UnpluginInstance<UserOptions, false>['webpack'] = nanointlUnplugin.webpack;
+export const nanointlEsbuildPlugin: UnpluginInstance<UserOptions, false>['esbuild'] = nanointlUnplugin.esbuild;

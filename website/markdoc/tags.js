@@ -1,5 +1,5 @@
-import { Callout } from '@/components/Callout'
-import { QuickLink, QuickLinks } from '@/components/QuickLinks'
+import { Callout } from '@/components/Callout';
+import { QuickLink, QuickLinks } from '@/components/QuickLinks';
 
 const tags = {
   callout: {
@@ -23,7 +23,6 @@ const tags = {
     },
     render: ({ src, alt = '', caption }) => (
       <figure>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={alt} />
         <figcaption>{caption}</figcaption>
       </figure>
@@ -42,6 +41,6 @@ const tags = {
       href: { type: String },
     },
   },
-}
+};
 
-export default tags
+export default tags;

@@ -1,7 +1,7 @@
 Core bundle size:
 | lingUi | formatjs | nanointl |
 | --- | --- | --- |
-| 3526 bytes | 28322 bytes | 2714 bytes |
+| 3526 B | 28322 B | 2714 B |
 
 Formatting 1k messages on same machine:
 | lingUi | formatjs | nanointl |
