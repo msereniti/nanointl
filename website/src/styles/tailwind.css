@@ -40,11 +40,13 @@ input[type='number'] {
 }
 
 .prism-code::-webkit-scrollbar,
+.dark *::-webkit-scrollbar,
 .dark::-webkit-scrollbar {
   background-color: theme('colors.slate.800');
 }
 
 .prism-code::-webkit-scrollbar-thumb,
+.dark *::-webkit-scrollbar-thumb,
 .dark::-webkit-scrollbar-thumb {
   background-color: theme('colors.slate.600');
 }

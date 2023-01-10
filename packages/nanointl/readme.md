@@ -98,7 +98,9 @@ export const App: React.FC = () => {
   ...
 ```
 
-### Dynamic locales with unplugin (for Vite, Esbuild, Rollup and Webpack)
+### Dynamic locales
+
+With plugins for Vite, Esbuild, Rollup and Webpack.
 
 `@nanointl/unplugin` allows you to bundle application for any specific locale and load other locales dynamically.
 
@@ -145,7 +147,7 @@ import { makeReactIntl } from '@nanointl/react/src/nanointl-react';
 +
 + loadMessages.fr().then((frMessages) => intl = makeIntl('fr', frMessages));
 
-# Or, in React application:
+// Or, in React application:
 - export const { IntlProvider, useTranslation, useIntlControls } = makeReactIntl('en', enMessages);
 + export const { IntlProvider, useTranslation, useIntlControls } = makeReactIntl(initLocale, initMessages, { loadMessages });
 ```
@@ -171,32 +173,43 @@ Messages object should be `const` (without `as const` messages object above woul
 
 For messages stored in json files you can use `typescript-json-as-const-plugin` typescript plugin. It changes the way how typescript inferencing JSON files typings to `as const` behavior.
 
-1. Install plugin
+```ts
+// how json import looks without plugin
+import obj from './obj.json';
+// { key1: string, key2: { key3: number } }
 
+// how json import looks with plugin
+import obj from './obj.json';
+// { key1: "Hello world", key2: { key3: 3 } }
 ```
-pnpm add -D typescript-json-as-const-plugin
-# or: npm install --save-dev typescript-json-as-const-plugin
-```
+
+1. To use it, firstly you need to install plugin
+
+   ```
+   pnpm add -D typescript-json-as-const-plugin
+   # or: npm install --save-dev typescript-json-as-const-plugin
+   ```
 
 2. Add plugin to your `tsconfig.json`
 
-```diff
-{
-  "compilerOptions": {
-    ...
-    "plugins": [
-+      { "name": "typescript-json-as-const-plugin", "include": ["./src/locales"] },
-      ...
-    ]
-  },
-  ...
-}
+   ```diff
+   {
+     "compilerOptions": {
+       ...
+       "plugins": [
+   +      { "name": "typescript-json-as-const-plugin", "include": ["./src/locales"] },
+         ...
+       ]
+     },
+     ...
+   }
+   ```
 
-```
-
-3. (VS Code only) [switch to workspace version of Typescript](https://code.visualstudio.com/docs/typescript/typescript-compiling#_using-the-workspace-version-of-typescript)
+3. ([VS Code](https://code.visualstudio.com) only) [switch to workspace version of Typescript](https://code.visualstudio.com/docs/typescript/typescript-compiling#_using-the-workspace-version-of-typescript)
 
 4. Restart typescript server.
+   1. [tsc cli](https://www.npmjs.com/package/typescript) – kill process and restart it.
+   2. [VS Code](https://code.visualstudio.com) – while any .ts file is opened, press ⌘/cmd+shift+p to open command palette and type to find command "TypeScript: restart TS server"
 
 ## Reference
 

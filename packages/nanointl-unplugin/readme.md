@@ -47,7 +47,7 @@ import { makeReactIntl } from '@nanointl/react/src/nanointl-react';
 +
 + loadMessages.fr().then((frMessages) => intl = makeIntl('fr', frMessages));
 
-# Or, in React application:
+// Or, in React application:
 - export const { IntlProvider, useTranslation, useIntlControls } = makeReactIntl('en', enMessages);
 + export const { IntlProvider, useTranslation, useIntlControls } = makeReactIntl(initLocale, initMessages, { loadMessages });
 ```

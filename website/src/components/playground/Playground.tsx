@@ -228,21 +228,21 @@ export const Playground: React.FC = () => {
         <div className="flex justify-between items-center pr-5">
           <TrafficLightsIcon className="h-2.5 w-auto stroke-slate-500/30" />
           {animation === 'pause' ? (
-            <span className="text-gray-400 text-xs h-2.5">
+            <span className="text-gray-400 text-xs">
               animation was paused, you can play with examples{' '}
               <span className="underline ml-5 underline-offset-2 cursor-pointer" onClick={() => setAnimation('play')}>
                 resume animation
               </span>
             </span>
           ) : (
-            <span className="text-gray-500 text-xs h-2.5">
+            <span className="text-gray-500 text-xs">
               <span className="underline ml-5 underline-offset-2 cursor-pointer" onClick={() => setAnimation('pause')}>
                 pause animation
               </span>
             </span>
           )}
         </div>
-        <div className="mt-4 flex space-x-2 text-xs flex-wrap">
+        <div className="mt-4 flex gap-x-4 gap-y-2 text-xs flex-wrap">
           {presets.map((preset) => (
             <div
               key={preset.name}
