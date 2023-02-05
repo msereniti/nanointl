@@ -1,0 +1,8 @@
+---
+src/locales/en.json
+["src/locales/*.json"]
+true
+---
+../react-vite/src/locales/en.json
+["src/locales/*.json"]
+false

@@ -1,10 +1,10 @@
 {
   "viteLogo": "Vite logo",
-  "reactLogo": "React logo",
-  "title": "Vite + React + Nanointl",
+  "svelteLogo": "Svelte logo",
+  "title": "Vite + Svelte + Nanointl",
   "counter": "Button {count, select, 0{wasn''t} other{was}} clicked{count, plural, =0 {} one{ # time} other { # times}}",
   "description": "Edit <code>{filePath}</code> and save to test HMR",
   "changeLocale": "Pick locale",
-  "readTheDocs": "Click on the <b>Vite</b> and <b>React</b> logos to learn more",
+  "readTheDocs": "Click on the <b>Vite</b> and <b>Svelte</b> logos to learn more",
   "locale": "Change locale"
 }

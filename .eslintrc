@@ -8,6 +8,8 @@
       "./tsconfig.node.json",
       "./examples/react-vite/tsconfig.json",
       "./examples/react-vite/tsconfig.node.json",
+      "./examples/svelte-vite/tsconfig.json",
+      "./examples/svelte-vite/tsconfig.node.json",
       "./website/tsconfig.json",
       "./website/tsconfig.node.json"
     ]

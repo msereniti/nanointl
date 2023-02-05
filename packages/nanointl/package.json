@@ -14,7 +14,7 @@
     "build": "pnpm run clear && bash ./build.sh"
   },
   "source": "src/index.ts",
-  "main": "dist/index.js",
+  "main": "dist/index.mjs",
   "umd:main": "dist/index.umd.js",
   "cjs:main": "dist/index.cjs",
   "module": "dist/index.mjs",

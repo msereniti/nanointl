@@ -28,7 +28,7 @@ pnpm add -D typescript-json-as-const-plugin
      "compilerOptions": {
        ...
        "plugins": [
-   +      { "name": "typescript-json-as-const-plugin", "include": ["./src/locales"] },
+   +      { "name": "typescript-json-as-const-plugin", "include": ["src/locales/*.json"] },
          ...
        ]
      },

@@ -10,13 +10,10 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node", // https://stackoverflow.com/questions/72193784/why-doesnt-the-exports-field-of-npm-work-in-typescript
+    "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "plugins": [{ "name": "typescript-json-as-const-plugin", "include": ["src/locales/*.json"] }]
+    "noEmit": true
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src"]
 }

@@ -1,10 +1,10 @@
 {
   "viteLogo": "Логотип Vita",
-  "reactLogo": "Логотип React",
-  "title": "Vite + React + Nanointl",
+  "svelteLogo": "Логотип Svelte",
+  "title": "Vite + Svelte + Nanointl",
   "counter": "Кнопка {count, select, 0{не была} other{была}} нажата{count, plural, =0 {} one{ # раз} few { # раза} other { # раз}}",
   "description": "Измените и сохраните файл <code>{filePath}</code> чтобы заценить HMR",
   "changeLocale": "Выбрать язык",
-  "readTheDocs": "Нажмите на логотипы <b>Vite</b> и <b>React</b> чтобы прочитать их документацию",
+  "readTheDocs": "Нажмите на логотипы <b>Vite</b> и <b>Svelte</b> чтобы прочитать их документацию",
   "locale": "Изменить язык"
 }

@@ -33,7 +33,7 @@
     "tsm": "^2.2.2",
     "typescript": "^4.8.4",
     "typescript-json-as-const-plugin": "*",
-    "vite": "^3.1.0",
+    "vite": "^4.1.0",
     "vitest": "^0.22.1"
   },
   "homepage": "https://github.com/phytonmk/nanointl",

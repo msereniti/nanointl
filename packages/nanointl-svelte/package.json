@@ -1,26 +1,25 @@
 {
-  "name": "@nanointl/react",
+  "name": "@nanointl/svelte",
   "version": "0.0.2",
   "author": "Michael Sereniti",
-  "description": "Optional package provides first class citizen support for nanointl with React framework.",
+  "description": "Optional package provides first class citizen support for nanointl with Svelte framework.",
   "license": "MIT",
   "private": false,
   "type": "module",
-  "source": "src/nanointl-react.tsx",
+  "source": "src/nanointl-svelte.ts",
   "main": "dist/index.mjs",
   "umd:main": "dist/index.umd.js",
   "cjs:main": "dist/index.cjs.js",
   "module": "dist/index.mjs",
-  "types": "dist/nanointl-react.d.ts",
+  "types": "dist/nanointl-svelte.d.ts",
   "devDependencies": {
-    "@types/react": "18.0.20",
     "microbundle": "^0.15.1",
-    "react": "16.8.6",
-    "nanointl": "^0.0.3"
+    "nanointl": "^0.0.3",
+    "svelte": "^3.55.1"
   },
   "peerDependencies": {
-    "react": "^16.8",
-    "nanointl": "^0.0.3"
+    "nanointl": "^0.0.3",
+    "svelte": "^3"
   },
   "scripts": {
     "clear": "rm -rf dist",
@@ -31,13 +30,13 @@
     "internationalization",
     "localization",
     "translation",
-    "react",
+    "svelte",
     "nanointl"
   ],
   "homepage": "https://github.com/phytonmk/nanointl",
   "repository": {
     "type": "git",
     "url": "https://github.com/phytonmk/nanointl.git",
-    "directory": "packages/nanointl-react"
+    "directory": "packages/nanointl-svelte"
   }
 }

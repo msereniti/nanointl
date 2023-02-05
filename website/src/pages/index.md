@@ -61,7 +61,7 @@ pnpm add @nanointl/react
 
 ```js
 // src/i18n.ts
-import { makeReactIntl } from '@nanointl/react/src/nanointl-react';
+import { makeReactIntl } from '@nanointl/react';
 import enMessages from './locales/en.json';
 import { tagsPlugin } from 'nanointl/tags';
 
@@ -143,7 +143,7 @@ export default defineConfig({
 
 ```diff
 // src/i18n.ts
-import { makeReactIntl } from '@nanointl/react/src/nanointl-react';
+import { makeReactIntl } from '@nanointl/react';
 - import enMessages from './locales/en.json';
 + import { initLocale, initMessages, loadMessages } from '@nanointl/unplugin/runtime';
 
@@ -205,7 +205,7 @@ import obj from './obj.json';
      "compilerOptions": {
        ...
        "plugins": [
-   +      { "name": "typescript-json-as-const-plugin", "include": ["./src/locales"] },
+   +      { "name": "typescript-json-as-const-plugin", "include": ["src/locales/*.json"] },
          ...
        ]
      },

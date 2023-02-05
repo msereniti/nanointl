@@ -14,11 +14,7 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
-    "baseUrl": "./",
-    "plugins": [{ "name": "typescript-json-as-const-plugin" }]
+    "baseUrl": "./"
   },
   "include": ["packages"],
   "exclude": ["dist", "packages/nanointl/*.d.ts"],

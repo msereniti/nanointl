@@ -45,7 +45,7 @@ export const makeReactIntl = <
       proviedLocaleListener?.(locale);
     }
   };
-  const getAvailableLocales = () => [...new Set([...Object.keys(intlContainer), ...Object.keys(loadMessages || {})])];
+  const getAvailableLocales = () => Array.from(new Set([...Object.keys(intlContainer), ...Object.keys(loadMessages || {})]));
   const loadLocale = async (locale: string) => {
     if (!loadMessages) return;
     const messages = await loadMessages[locale]?.();

@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import type tss from 'typescript/lib/tsserverlibrary';
 import minimatch from 'minimatch';
 
@@ -23,8 +24,15 @@ const init = (modules: { typescript: typeof tss }) => {
 
     const filter = (fileName: string) => {
       if (!fileName.toLowerCase().endsWith('.json')) return false;
-      if (info.config.include && !info.config.include.some((include: string) => minimatch(fileName, include))) return false;
-      if (info.config.exclude && info.config.exclude.some((exclude: string) => minimatch(fileName, exclude))) return false;
+      const relativeFileName = path.relative(directory, fileName);
+      fs.appendFileSync('debug.txt', '---' + '\n');
+      fs.appendFileSync('debug.txt', relativeFileName + '\n');
+      fs.appendFileSync('debug.txt', JSON.stringify(info.config.include) + '\n');
+      fs.appendFileSync('debug.txt', info.config.include.some((include: string) => minimatch(relativeFileName, include)) + '\n');
+      if (info.config.include && !info.config.include.some((include: string) => minimatch(relativeFileName, include)))
+        return false;
+      if (info.config.exclude && info.config.exclude.some((exclude: string) => minimatch(relativeFileName, exclude)))
+        return false;
       return true;
     };
 
